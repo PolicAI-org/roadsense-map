@@ -1,8 +1,9 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import db from './db';
+import db from './db'
+import fs from 'fs'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -31,7 +32,7 @@ function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
-      preload: path.join(__dirname, '../preload/index.mjs'),
+      preload: path.join(__dirname, '../dist-electron/preload.mjs'),
     },
   })
 
@@ -70,7 +71,7 @@ app.whenReady().then(createWindow)
 
 ipcMain.handle('add-marker', (_event, lat: number, lon: number) => {
   const stmt = db.prepare(`
-    INSERT INTO markers (lat, lon, created_at)
+    INSERT INTO coords (lat, lon, type)
     VALUES (?, ?, ?)
   `);
 
@@ -80,3 +81,49 @@ ipcMain.handle('add-marker', (_event, lat: number, lon: number) => {
 ipcMain.handle('get-markers', () => {
   return db.prepare(`SELECT * FROM markers`).all();
 });
+
+ipcMain.handle('dialog:open-file', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  });
+
+  if (result.canceled) return null;
+
+  return result.filePaths;
+});
+
+type TableRow = {
+    lat: number
+    lon: number
+    quality: number
+}
+
+ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
+  const stmt = db.prepare(`
+    INSERT INTO coordinates (lat, lon, quality)
+    VALUES (?, ?, ?)
+  `)
+
+  const insertMany = db.transaction((rows: TableRow[]) => {
+    for (const row of rows) {
+      stmt.run(row.lat, row.lon, row.quality)
+    }
+  })
+
+  insertMany(rows)
+})
+
+ipcMain.handle('read-file', (_event, path: string) => {
+  return fs.readFileSync(path, 'utf-8')
+})
+
+ipcMain.handle('get-coordinates', () => {
+  return db.prepare(`
+    SELECT lat, lon, quality
+    FROM coordinates
+    ORDER BY id ASC
+  `).all()
+})

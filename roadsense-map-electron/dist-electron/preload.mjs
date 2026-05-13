@@ -20,7 +20,11 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   // You can expose other APTs you need here.
   // ...
 });
-electron.contextBridge.exposeInMainWorld("api", {
+electron.contextBridge.exposeInMainWorld("electronAPI", {
   addMarker: (lat, lon) => electron.ipcRenderer.invoke("add-marker", lat, lon),
-  getMarkers: () => electron.ipcRenderer.invoke("get-markers")
+  getMarkers: () => electron.ipcRenderer.invoke("get-markers"),
+  openFile: () => electron.ipcRenderer.invoke("dialog:open-file"),
+  readFile: (path) => electron.ipcRenderer.invoke("read-file", path),
+  insertRows: (rows) => electron.ipcRenderer.invoke("insert-rows", rows),
+  getCoordinates: () => electron.ipcRenderer.invoke("get-coordinates")
 });

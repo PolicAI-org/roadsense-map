@@ -1,15 +1,16 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import Database from "better-sqlite3";
+import fs from "fs";
 const db = new Database("roadsense.db");
 db.exec(`
-  CREATE TABLE IF NOT EXISTS markers (
+  CREATE TABLE IF NOT EXISTS coordinates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lat REAL,
     lon REAL,
-    created_at TEXT
+    quality INTEGER
   )
 `);
 createRequire(import.meta.url);
@@ -24,7 +25,7 @@ function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname$1, "../preload/index.mjs")
+      preload: path.join(__dirname$1, "../dist-electron/preload.mjs")
     }
   });
   win.webContents.on("did-finish-load", () => {
@@ -50,13 +51,45 @@ app.on("activate", () => {
 app.whenReady().then(createWindow);
 ipcMain.handle("add-marker", (_event, lat, lon) => {
   const stmt = db.prepare(`
-    INSERT INTO markers (lat, lon, created_at)
+    INSERT INTO coords (lat, lon, type)
     VALUES (?, ?, ?)
   `);
   stmt.run(lat, lon, (/* @__PURE__ */ new Date()).toISOString());
 });
 ipcMain.handle("get-markers", () => {
   return db.prepare(`SELECT * FROM markers`).all();
+});
+ipcMain.handle("dialog:open-file", async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openFile"],
+    filters: [
+      { name: "All Files", extensions: ["*"] }
+    ]
+  });
+  if (result.canceled) return null;
+  return result.filePaths;
+});
+ipcMain.handle("insert-rows", (_event, rows) => {
+  const stmt = db.prepare(`
+    INSERT INTO coordinates (lat, lon, quality)
+    VALUES (?, ?, ?)
+  `);
+  const insertMany = db.transaction((rows2) => {
+    for (const row of rows2) {
+      stmt.run(row.lat, row.lon, row.quality);
+    }
+  });
+  insertMany(rows);
+});
+ipcMain.handle("read-file", (_event, path2) => {
+  return fs.readFileSync(path2, "utf-8");
+});
+ipcMain.handle("get-coordinates", () => {
+  return db.prepare(`
+    SELECT lat, lon, quality
+    FROM coordinates
+    ORDER BY id ASC
+  `).all();
 });
 export {
   MAIN_DIST,

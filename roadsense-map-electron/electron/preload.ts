@@ -23,10 +23,28 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   // ...
 })
 
-contextBridge.exposeInMainWorld('api', {
+contextBridge.exposeInMainWorld('electronAPI', {
   addMarker: (lat: number, lon: number) =>
     ipcRenderer.invoke('add-marker', lat, lon),
 
   getMarkers: () =>
-    ipcRenderer.invoke('get-markers')
+    ipcRenderer.invoke('get-markers'),
+
+  openFile: () =>
+    ipcRenderer.invoke('dialog:open-file'),
+
+  readFile: (path: string) =>
+    ipcRenderer.invoke('read-file', path),
+
+  insertRows: (rows: TableRow[]) =>
+    ipcRenderer.invoke('insert-rows', rows),
+
+  getCoordinates: () =>
+    ipcRenderer.invoke('get-coordinates')
 });
+
+type TableRow = {
+    lat: number
+    lon: number
+    quality: number
+}
