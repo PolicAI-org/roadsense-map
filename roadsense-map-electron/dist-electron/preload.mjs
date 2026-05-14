@@ -26,5 +26,6 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   openFile: () => electron.ipcRenderer.invoke("dialog:open-file"),
   readFile: (path) => electron.ipcRenderer.invoke("read-file", path),
   insertRows: (rows) => electron.ipcRenderer.invoke("insert-rows", rows),
-  getCoordinates: () => electron.ipcRenderer.invoke("get-coordinates")
+  getCoordinates: () => electron.ipcRenderer.invoke("get-coordinates"),
+  clearCoordinates: () => electron.ipcRenderer.invoke("clear-coordinates")
 });

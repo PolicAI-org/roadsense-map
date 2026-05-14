@@ -40,7 +40,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('insert-rows', rows),
 
   getCoordinates: () =>
-    ipcRenderer.invoke('get-coordinates')
+    ipcRenderer.invoke('get-coordinates'),
+
+  clearCoordinates: () =>
+    ipcRenderer.invoke('clear-coordinates')
 });
 
 type TableRow = {

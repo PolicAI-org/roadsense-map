@@ -16,6 +16,8 @@ declare global {
         lon: number
         quality: number
       }[]>
+
+      clearCoordinates: () =>promise<{}>
     }
   }
 }

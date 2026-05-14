@@ -40,7 +40,6 @@ export default function Map({ refreshKey }: Props) {
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
-  // reusable reload function
   const reloadRoadData = async () => {
     if (!mapRef.current) return
 
@@ -80,7 +79,6 @@ export default function Map({ refreshKey }: Props) {
     }
   }
 
-  // create map once
   useEffect(() => {
     if (!mapContainer.current) return
 
@@ -94,7 +92,6 @@ export default function Map({ refreshKey }: Props) {
     mapRef.current = map
 
     map.on('load', async () => {
-      // empty source initially
       map.addSource('road', {
         type: 'geojson',
         data: {

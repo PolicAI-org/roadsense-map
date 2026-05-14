@@ -127,3 +127,7 @@ ipcMain.handle('get-coordinates', () => {
     ORDER BY id ASC
   `).all()
 })
+
+ipcMain.handle('clear-coordinates', () => {
+  db.prepare('DELETE FROM coordinates').run()
+})

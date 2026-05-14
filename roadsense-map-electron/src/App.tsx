@@ -51,7 +51,16 @@ export default function App() {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <button onClick={openFile}>
-        Select File
+        Izberi datoteko
+      </button>
+
+      <button
+        onClick={async () => {
+          await window.electronAPI.clearCoordinates()
+          setRefreshKey(prev => prev + 1)
+        }}
+      >
+        Počisti podatke
       </button>
 
       {file && (
