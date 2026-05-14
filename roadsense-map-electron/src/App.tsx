@@ -1,8 +1,11 @@
 import Map from './Map';
 import { useState } from 'react'
 
+
 export default function App() {
   const [file, setFile] = useState<string | null>(null)
+
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const openFile = async () => {
     const files = await window.electronAPI.openFile()
@@ -12,6 +15,8 @@ export default function App() {
 
     const text = await window.electronAPI.readFile(files[0])
     window.electronAPI.insertRows(parseCSV(text))
+
+    setRefreshKey(prev => prev + 1)
   }
 
   type TableRow = {
@@ -54,7 +59,7 @@ export default function App() {
           Selected: {file}
         </p>
       )}
-      <Map />
+      <Map refreshKey={refreshKey}/>
     </div>
   );
 }

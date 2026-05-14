@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
-import type { FeatureCollection, LineString, Point } from 'geojson'
+import type { FeatureCollection, LineString } from 'geojson'
 import maplibregl from 'maplibre-gl'
+import type { GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 type Coordinate = {
@@ -9,10 +10,77 @@ type Coordinate = {
   quality: number
 }
 
-export default function Map() {
+type Props = {
+  refreshKey: number
+}
+
+function distanceInMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) {
+  const R = 6371000
+
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+  return R * c
+}
+
+export default function Map({ refreshKey }: Props) {
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
+  // reusable reload function
+  const reloadRoadData = async () => {
+    if (!mapRef.current) return
+
+    const data: Coordinate[] =
+      await window.electronAPI.getCoordinates()
+
+    const segments: FeatureCollection<LineString> = {
+      type: 'FeatureCollection',
+      features: []
+    }
+
+    for (let i = 0; i < data.length - 1; i++) {
+      const current = data[i]
+      const next = data[i + 1]
+
+      if (distanceInMeters(current.lat, current.lon, next.lat, next.lon) > 50) continue
+
+      segments.features.push({
+        type: 'Feature',
+        properties: {
+          quality: current.quality
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [current.lon, current.lat],
+            [next.lon, next.lat]
+          ]
+        }
+      })
+    }
+
+    const source = mapRef.current.getSource('road') as GeoJSONSource
+
+    if (source && 'setData' in source) {
+      source.setData(segments)
+    }
+  }
+
+  // create map once
   useEffect(() => {
     if (!mapContainer.current) return
 
@@ -26,52 +94,14 @@ export default function Map() {
     mapRef.current = map
 
     map.on('load', async () => {
-      const data: Coordinate[] = await window.electronAPI.getCoordinates()
-
-      const segments: FeatureCollection<LineString> = {
-        type: 'FeatureCollection',
-        features: []
-      }
-
-      for (let i = 0; i < data.length - 1; i++) {
-        const current = data[i]
-        const next = data[i + 1]
-
-        segments.features.push({
-          type: 'Feature',
-          properties: {
-            quality: current.quality
-          },
-          geometry: {
-            type: 'LineString',
-            coordinates: [
-              [current.lon, current.lat],
-              [next.lon, next.lat]
-            ]
-          }
-        })
-      }
-
+      // empty source initially
       map.addSource('road', {
         type: 'geojson',
-        data: segments
+        data: {
+          type: 'FeatureCollection',
+          features: []
+        }
       })
-
-      /*
-      const heatmap_data: FeatureCollection<Point> = {
-        type: 'FeatureCollection',
-        features: data.map(p => ({
-          type: 'Feature',
-          properties: {
-            quality: p.quality
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [p.lon, p.lat]
-          }
-        }))
-      }
-        */
 
       map.addLayer({
         id: 'road-layer',
@@ -92,42 +122,20 @@ export default function Map() {
         }
       })
 
-      /*
-      map.addSource('heat-points', {
-        type: 'geojson',
-        data: heatmap_data
-      })
-
-      map.addLayer({
-        id: 'route-heat',
-        type: 'heatmap',
-        source: 'heat-points',
-        paint: {
-          // Use your quality column
-          'heatmap-weight': [
-            'get',
-            'quality'
-          ],
-
-          'heatmap-intensity': 0.3,
-
-          'heatmap-radius': 5,
-
-          'heatmap-color': [
-            'interpolate',
-            ['linear'],
-            ['heatmap-density'],
-            0, 'rgba(0,0,255,0)',
-            0.3, 'blue',
-            0.6, 'yellow',
-            1.0, 'red'
-          ]
-        }
-      })*/
+      await reloadRoadData()
     })
 
     return () => map.remove()
   }, [])
 
-  return <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
+  useEffect(() => {
+    reloadRoadData()
+  }, [refreshKey])
+
+  return (
+    <div
+      ref={mapContainer}
+      style={{ width: '100%', height: '100%' }}
+    />
+  )
 }
