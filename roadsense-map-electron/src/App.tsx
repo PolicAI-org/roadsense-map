@@ -25,7 +25,7 @@ export default function App() {
   
     const result: TableRow[] = [];
   
-    for (let i = 0; i < rows.length; i += 100) {
+    for (let i = 0; i < rows.length; i += 50) {
       const row = rows[i];
   
       const [lat, lon, quality] = row.split(',');
