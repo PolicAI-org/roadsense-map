@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import db from './db'
 import fs from 'fs'
+import { spawn } from 'child_process'
+import { json } from 'node:stream/consumers'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -116,8 +118,32 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
   insertMany(rows)
 })
 
-ipcMain.handle('read-file', (_event, path: string) => {
-  return fs.readFileSync(path, 'utf-8')
+ipcMain.handle('read-file', (_event, filePath: string) => {
+  return new Promise((resolve, reject) => {
+    const pythonPath = process.platform === 'win32' ? 'python' : 'python3'
+    const py = spawn(pythonPath, ['./scripts/process_data.py', filePath])
+
+    let output = ''
+    let errorOutput = ''
+
+    py.stdout.on('data', (data) => {
+      output += data.toString()
+    })
+
+    py.stderr.on('data', (data) => {
+      errorOutput += data.toString()
+    })
+
+    py.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Napaka pri zagonu skripte (code ${code}): ${errorOutput}`))
+        return
+      }
+      let json_data = output
+      //console.log(output)
+      resolve(json_data)
+    })
+  })
 })
 
 ipcMain.handle('get-coordinates', () => {

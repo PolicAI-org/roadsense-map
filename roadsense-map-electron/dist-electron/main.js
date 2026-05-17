@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import Database from "better-sqlite3";
-import fs from "fs";
+import { spawn } from "child_process";
 const db = new Database("roadsense.db");
 db.exec(`
   CREATE TABLE IF NOT EXISTS coordinates (
@@ -81,8 +81,28 @@ ipcMain.handle("insert-rows", (_event, rows) => {
   });
   insertMany(rows);
 });
-ipcMain.handle("read-file", (_event, path2) => {
-  return fs.readFileSync(path2, "utf-8");
+ipcMain.handle("read-file", (_event, filePath) => {
+  return new Promise((resolve, reject) => {
+    const pythonPath = process.platform === "win32" ? "python" : "python3";
+    const py = spawn(pythonPath, ["./scripts/process_data.py", filePath]);
+    let output = "";
+    let errorOutput = "";
+    py.stdout.on("data", (data) => {
+      output += data.toString();
+    });
+    py.stderr.on("data", (data) => {
+      errorOutput += data.toString();
+    });
+    py.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Napaka pri zagonu skripte (code ${code}): ${errorOutput}`));
+        return;
+      }
+      let json_data = output;
+      console.log(output);
+      resolve(json_data);
+    });
+  });
 });
 ipcMain.handle("get-coordinates", () => {
   return db.prepare(`
