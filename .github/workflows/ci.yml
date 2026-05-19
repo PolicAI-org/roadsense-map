@@ -9,6 +9,11 @@ on:
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: ./roadsense-map-electron
+        
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
