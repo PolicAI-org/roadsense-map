@@ -17,7 +17,7 @@ declare global {
         quality: number
       }[]>
 
-      clearCoordinates: () =>promise<{}>
+      clearCoordinates: () =>Promise<void>
     }
   }
 }

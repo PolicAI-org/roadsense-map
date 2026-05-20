@@ -1,11 +1,10 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
-import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
-import Database from "better-sqlite3";
-import fs from "fs";
-const db = new Database("roadsense.db");
-db.exec(`
+import { app as s, BrowserWindow as p, ipcMain as t, dialog as T } from "electron";
+import { fileURLToPath as f } from "node:url";
+import n from "node:path";
+import u from "better-sqlite3";
+import I from "fs";
+const o = new u("roadsense.db");
+o.exec(`
   CREATE TABLE IF NOT EXISTS coordinates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lat REAL,
@@ -13,89 +12,65 @@ db.exec(`
     quality INTEGER
   )
 `);
-createRequire(import.meta.url);
-const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
-process.env.APP_ROOT = path.join(__dirname$1, "..");
-const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
-const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
-let win;
-function createWindow() {
-  win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+const d = n.dirname(f(import.meta.url));
+process.env.APP_ROOT = n.join(d, "..");
+const c = process.env.VITE_DEV_SERVER_URL, L = n.join(process.env.APP_ROOT, "dist-electron"), _ = n.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = c ? n.join(process.env.APP_ROOT, "public") : _;
+let e;
+function E() {
+  e = new p({
+    icon: n.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname$1, "../dist-electron/preload.mjs")
+      preload: n.join(d, "../dist-electron/preload.mjs")
     }
-  });
-  win.webContents.on("did-finish-load", () => {
-    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  });
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
-    win.loadFile(path.join(RENDERER_DIST, "index.html"));
-  }
+  }), e.webContents.on("did-finish-load", () => {
+    e == null || e.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  }), c ? e.loadURL(c) : e.loadFile(n.join(d, "../dist/index.html"));
 }
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-    win = null;
-  }
+s.on("window-all-closed", () => {
+  process.platform !== "darwin" && (s.quit(), e = null);
 });
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+s.on("activate", () => {
+  p.getAllWindows().length === 0 && E();
 });
-app.whenReady().then(createWindow);
-ipcMain.handle("add-marker", (_event, lat, lon) => {
-  const stmt = db.prepare(`
+s.whenReady().then(E);
+t.handle("add-marker", (r, a, i) => {
+  o.prepare(`
     INSERT INTO coords (lat, lon, type)
     VALUES (?, ?, ?)
-  `);
-  stmt.run(lat, lon, (/* @__PURE__ */ new Date()).toISOString());
+  `).run(a, i, (/* @__PURE__ */ new Date()).toISOString());
 });
-ipcMain.handle("get-markers", () => {
-  return db.prepare(`SELECT * FROM markers`).all();
-});
-ipcMain.handle("dialog:open-file", async () => {
-  const result = await dialog.showOpenDialog({
+t.handle("get-markers", () => o.prepare("SELECT * FROM markers").all());
+t.handle("dialog:open-file", async () => {
+  const r = await T.showOpenDialog({
     properties: ["openFile"],
     filters: [
       { name: "All Files", extensions: ["*"] }
     ]
   });
-  if (result.canceled) return null;
-  return result.filePaths;
+  return r.canceled ? null : r.filePaths;
 });
-ipcMain.handle("insert-rows", (_event, rows) => {
-  const stmt = db.prepare(`
+t.handle("insert-rows", (r, a) => {
+  const i = o.prepare(`
     INSERT INTO coordinates (lat, lon, quality)
     VALUES (?, ?, ?)
   `);
-  const insertMany = db.transaction((rows2) => {
-    for (const row of rows2) {
-      stmt.run(row.lat, row.lon, row.quality);
-    }
-  });
-  insertMany(rows);
+  o.transaction((m) => {
+    for (const l of m)
+      i.run(l.lat, l.lon, l.quality);
+  })(a);
 });
-ipcMain.handle("read-file", (_event, path2) => {
-  return fs.readFileSync(path2, "utf-8");
-});
-ipcMain.handle("get-coordinates", () => {
-  return db.prepare(`
+t.handle("read-file", (r, a) => I.readFileSync(a, "utf-8"));
+t.handle("get-coordinates", () => o.prepare(`
     SELECT lat, lon, quality
     FROM coordinates
     ORDER BY id ASC
-  `).all();
-});
-ipcMain.handle("clear-coordinates", () => {
-  db.prepare("DELETE FROM coordinates").run();
+  `).all());
+t.handle("clear-coordinates", () => {
+  o.prepare("DELETE FROM coordinates").run();
 });
 export {
-  MAIN_DIST,
-  RENDERER_DIST,
-  VITE_DEV_SERVER_URL
+  L as MAIN_DIST,
+  _ as RENDERER_DIST,
+  c as VITE_DEV_SERVER_URL
 };
