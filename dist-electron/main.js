@@ -81,32 +81,8 @@ ipcMain.handle("insert-rows", (_event, rows) => {
   });
   insertMany(rows);
 });
-<<<<<<< Updated upstream
 ipcMain.handle("read-file", (_event, path2) => {
   return fs.readFileSync(path2, "utf-8");
-=======
-ipcMain.handle("read-file", (_event, filePath) => {
-  return new Promise((resolve, reject) => {
-    const pythonPath = process.platform === "win32" ? "python" : "python3";
-    const py = spawn(pythonPath, ["./scripts/process_data.py", filePath]);
-    let output = "";
-    let errorOutput = "";
-    py.stdout.on("data", (data) => {
-      output += data.toString();
-    });
-    py.stderr.on("data", (data) => {
-      errorOutput += data.toString();
-    });
-    py.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(`Napaka pri zagonu skripte (code ${code}): ${errorOutput}`));
-        return;
-      }
-      let json_data = output;
-      resolve(json_data);
-    });
-  });
->>>>>>> Stashed changes
 });
 ipcMain.handle("get-coordinates", () => {
   return db.prepare(`
