@@ -1,14 +1,22 @@
 {
-  "name": "roadsense-map-electron",
+  "name": "roadsense-map",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "build": {
+    "asar": false,
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ]
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "postinstall": "electron-rebuild -f -w better-sqlite3"
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "test": "jest"
   },
   "build": {
     "extraResources": [
