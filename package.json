@@ -7,21 +7,12 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
-    ],
-    "linux": {
-    "target": "dir"
-    },
-    "mac": {
-      "target": "dir"
-    },
-    "win": {
-      "target": "dir"
-    }
+    ]
   },
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder --dir",
+    "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "postinstall": "electron-rebuild -f -w better-sqlite3",

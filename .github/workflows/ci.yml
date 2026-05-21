@@ -41,4 +41,10 @@ jobs:
           Xvfb :99 -screen 0 1024x768x24 &
 
       - name: Build Electron app
-        run: npm run build
+        run: npx electron-builder --dir
+
+      - name: Publish release
+        if: github.ref == 'refs/heads/main'
+        run: npx electron-builder
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
