@@ -120,7 +120,7 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
 ipcMain.handle('read-file', (_event, filePath: string) => {
   return new Promise((resolve, reject) => {
     const pythonPath = process.platform === 'win32' ? 'python' : 'python3'
-    const py = spawn(pythonPath, ['./scripts/process_data.py', filePath])
+    const py = spawn(pythonPath, ['./scripts/mockup_process.py', filePath])
 
     let output = ''
     let errorOutput = ''

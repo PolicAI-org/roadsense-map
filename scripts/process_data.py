@@ -203,8 +203,6 @@ def process_file(file_path: str) -> dict:
 
     classified = classify(preprocessed)
 
-
-
     return classified
 
 if __name__ == '__main__':
