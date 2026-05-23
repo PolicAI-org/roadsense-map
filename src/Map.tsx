@@ -55,7 +55,7 @@ export default function Map({ refreshKey }: Props) {
       const current = data[i]
       const next = data[i + 1]
 
-      if (distanceInMeters(current.lat, current.lon, next.lat, next.lon) > 50) continue
+      //if (distanceInMeters(current.lat, current.lon, next.lat, next.lon) > 50) continue
 
       segments.features.push({
         type: 'Feature',
