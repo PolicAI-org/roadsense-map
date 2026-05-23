@@ -120,7 +120,7 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
 ipcMain.handle('read-file', (_event, filePath: string) => {
   return new Promise((resolve, reject) => {
     const pythonPath = process.platform === 'win32' ? 'python' : 'python3'
-    const py = spawn(pythonPath, ['./scripts/mockup_process.py', filePath])
+    const py = spawn(pythonPath, ['./scripts/process_data_new.py', filePath])
 
     let output = ''
     let errorOutput = ''
@@ -139,7 +139,7 @@ ipcMain.handle('read-file', (_event, filePath: string) => {
         return
       }
       let json_data = output
-      //console.log(output)
+      console.log(output)
       resolve(json_data)
     })
   })

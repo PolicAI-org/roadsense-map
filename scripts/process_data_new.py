@@ -9,6 +9,7 @@ import torch
 import uuid
 from random import randint
 from math import isnan
+from model import CNN
 
 SEGMENT_INTERVAL = 1
 """
@@ -25,7 +26,6 @@ NPERSEG = 32      # Dolžina oken znotraj sekunde
 NOVERLAP = 24     # Prekrivanje znotraj sekunde (75% prekrivanje)
 
 CLASSIFIER_PATH = "best_model.pt"
-
 
 FS_GYRO = 100
 FS_ACCEL = 25
@@ -68,7 +68,7 @@ def compute_spectrogram(signal):
     return freqs, times, np.stack(all_segments_data, axis=0)
 
 
-def label(sensor_file, half_w=3000):
+def label(sensor_file, model, half_w=1500):
     df_sensors = pd.read_csv(sensor_file, low_memory=False)
     for col in ['x', 'y', 'z']:
         df_sensors[col] = pd.to_numeric(df_sensors[col], errors='coerce')
@@ -83,7 +83,7 @@ def label(sensor_file, half_w=3000):
         chunk_end = chunk_start + half_w
 
         mask = (df_sensors['unix_ts_ms'] >= chunk_start) & (df_sensors['unix_ts_ms'] < chunk_end)
-        segment = df_sensors.loc[mask].copy()
+        segment = df_sensors.loc[mask]
 
         if not segment.empty:
             accel = segment[segment['sensor'] == 'accel'][['x', 'y', 'z']].values
@@ -93,6 +93,7 @@ def label(sensor_file, half_w=3000):
             accuracies = segment['gps_accuracy'].dropna().unique()
 
             if len(lat) != len(lon) or len(lat) != len(accuracies):
+                chunk_start = chunk_end
                 continue
 
             if len(accel) < 13 or len(gyro) < 13:
@@ -124,7 +125,7 @@ def label(sensor_file, half_w=3000):
                 'window_size_ms': half_w,
             }
 
-            result = classify(chunk)
+            result = classify(chunk, model)
 
             for i in range(len(lat)):
                 coord = {
@@ -135,18 +136,25 @@ def label(sensor_file, half_w=3000):
 
                 coords.append(coord)
 
+
         chunk_start = chunk_end
 
     return coords
     
-def classify(preprocessed) -> dict:
-    #model = torch.load(CLASSIFIER_PATH, map_location='cpu')
-    #model.eval()
-    #print(model)
-    return randint(1, 3)
+def classify(preprocessed, model) -> dict:
 
-def process_file(file_path: str) -> dict:
-    coords = label(file_path)
+    data = torch.tensor(preprocessed['data'], dtype=torch.float32).unsqueeze(0)
+    data = data.view(-1, data.shape[2], data.shape[3], data.shape[4])
+
+    with torch.no_grad():
+        output = model(data)
+        #print(output.shape)
+        predicted_class = output.argmax().item()+1
+
+    return predicted_class
+
+def process_file(file_path: str, model: CNN) -> dict:
+    coords = label(file_path, model)
 
     result = ""
 
@@ -157,4 +165,7 @@ def process_file(file_path: str) -> dict:
 
 if __name__ == '__main__':
     file_path = sys.argv[1]
-    print(process_file(file_path))
+    model = CNN()
+    model.load_state_dict(torch.load(CLASSIFIER_PATH, map_location='cpu'))
+    model.eval()
+    print(process_file(file_path, model))
