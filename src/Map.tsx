@@ -84,7 +84,7 @@ export default function Map({ refreshKey }: Props) {
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://tiles.openfreemap.org/styles/liberty',
+      style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
       center: [14.5058, 46.0569],
       zoom: 7
     })
