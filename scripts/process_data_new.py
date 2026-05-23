@@ -7,6 +7,8 @@ from scipy.interpolate import interp1d
 from scipy.signal import spectrogram
 import torch
 import uuid
+from random import randint
+from math import isnan
 
 SEGMENT_INTERVAL = 1
 """
@@ -66,7 +68,7 @@ def compute_spectrogram(signal):
     return freqs, times, np.stack(all_segments_data, axis=0)
 
 
-def label(sensor_file, output_root, half_w=3000):
+def label(sensor_file, half_w=3000):
     df_sensors = pd.read_csv(sensor_file, low_memory=False)
     for col in ['x', 'y', 'z']:
         df_sensors[col] = pd.to_numeric(df_sensors[col], errors='coerce')
@@ -74,75 +76,85 @@ def label(sensor_file, output_root, half_w=3000):
     ts_min = df_sensors['unix_ts_ms'].min()
     ts_max = df_sensors['unix_ts_ms'].max()
 
-    label_dir = os.path.join(output_root, "unlabeled")
-    os.makedirs(label_dir, exist_ok=True)
+    coords = []
 
-    print("Splitting, filtering, and computing spectrograms...")
     chunk_start = ts_min
     while chunk_start + half_w <= ts_max:
         chunk_end = chunk_start + half_w
 
-        mask    = (df_sensors['unix_ts_ms'] >= chunk_start) & (df_sensors['unix_ts_ms'] < chunk_end)
+        mask = (df_sensors['unix_ts_ms'] >= chunk_start) & (df_sensors['unix_ts_ms'] < chunk_end)
         segment = df_sensors.loc[mask].copy()
 
         if not segment.empty:
             accel = segment[segment['sensor'] == 'accel'][['x', 'y', 'z']].values
-            gyro  = segment[segment['sensor'] == 'gyro'][['x', 'y', 'z']].values
+            gyro = segment[segment['sensor'] == 'gyro'][['x', 'y', 'z']].values
+            lat = segment['lat'].dropna().unique()
+            lon = segment['lon'].dropna().unique()
+            accuracies = segment['gps_accuracy'].dropna().unique()
+
+            if len(lat) != len(lon) or len(lat) != len(accuracies):
+                continue
 
             if len(accel) < 13 or len(gyro) < 13:
                 chunk_start = chunk_end
                 continue
 
-            # Upsample accel to TARGET_FS
-            x_old     = np.linspace(0, 1, len(accel))
-            x_new     = np.linspace(0, 1, len(gyro))
+            x_old = np.linspace(0, 1, len(accel))
+            x_new = np.linspace(0, 1, len(gyro))
             accel_up  = interp1d(x_old, accel, axis=0, kind='linear')(x_new)
 
-            # Filter
-            accel_clean = butter_filter(accel_up,    0.5, TARGET_FS, btype='high')
-            accel_clean = butter_filter(accel_clean, 40,  TARGET_FS, btype='low')
-            gyro_clean  = butter_filter(gyro,        40,  TARGET_FS, btype='low')
+            accel_clean = butter_filter(accel_up, 0.5,TARGET_FS, btype='high')
+            accel_clean = butter_filter(accel_clean, 40, TARGET_FS, btype='low')
+            gyro_clean = butter_filter(gyro, 40, TARGET_FS, btype='low')
 
-            # Spectrogram
             try:
                 freqs, times, accel_s = compute_spectrogram(accel_clean)
-                _,     _,     gyro_s  = compute_spectrogram(gyro_clean)
-            except ValueError as e:
-                print(f"  Preskočeno chunk@{chunk_start}: {e}")
+                _, _, gyro_s  = compute_spectrogram(gyro_clean)
+            except ValueError:
                 chunk_start = chunk_end
                 continue
 
             combined = np.concatenate([accel_s, gyro_s], axis=1)
 
-            filename  = str(uuid.uuid4()) + "_spec.npz"
-            save_path = os.path.join(label_dir, filename)
-            np.savez_compressed(save_path,
-                                data=combined,
-                                freqs=freqs,
-                                times=times,
-                                timestamp=chunk_start,
-                                window_size_ms=half_w)
-            print(f"  Shranjeno: {save_path} (oblika: {combined.shape})")
+            chunk = {
+                'data': combined,
+                'freqs': freqs,
+                'times': times,
+                'timestamp': chunk_start,
+                'window_size_ms': half_w,
+            }
+
+            result = classify(chunk)
+
+            for i in range(len(lat)):
+                coord = {
+                    'lat': lat[i],
+                    'lon': lon[i],
+                    'quality': result
+                }
+
+                coords.append(coord)
 
         chunk_start = chunk_end
+
+    return coords
     
 def classify(preprocessed) -> dict:
-    model = torch.load(CLASSIFIER_PATH, map_location='cpu')
+    #model = torch.load(CLASSIFIER_PATH, map_location='cpu')
     #model.eval()
     #print(model)
-    return 'a'
+    return randint(1, 3)
 
 def process_file(file_path: str) -> dict:
-    content = pd.read_csv(file_path, low_memory=False)
+    coords = label(file_path)
 
-    preprocessed = preprocess(content)
+    result = ""
 
-    classified = classify(preprocessed)
+    for coord in coords:
+        result += str(coord['lat']) + "," + str(coord['lon']) + "," + str(coord['quality']) + "\n"
 
-    return classified
+    return result
 
 if __name__ == '__main__':
     file_path = sys.argv[1]
-    #result = process_file(file_path)
-    label(file_path, 'out')
-    #print(result)
+    print(process_file(file_path))
