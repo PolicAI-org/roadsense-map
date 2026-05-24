@@ -88,13 +88,19 @@ def label(sensor_file, model, half_w=1500):
         if not segment.empty:
             accel = segment[segment['sensor'] == 'accel'][['x', 'y', 'z']].values
             gyro = segment[segment['sensor'] == 'gyro'][['x', 'y', 'z']].values
-            lat = segment['lat'].dropna().unique()
-            lon = segment['lon'].dropna().unique()
-            accuracies = segment['gps_accuracy'].dropna().unique()
+            lat = segment['lat'].unique()
+            lon = segment['lon'].unique()
+            accuracies = segment['gps_accuracy'].unique()
 
             if len(lat) != len(lon) or len(lat) != len(accuracies):
                 chunk_start = chunk_end
                 continue
+
+            valid_mask = ~(np.isnan(lat) | np.isnan(lon) | np.isnan(accuracies))
+
+            lat = lat[valid_mask]
+            lon = lon[valid_mask]
+            accuracies = accuracies[valid_mask]
 
             if len(accel) < 13 or len(gyro) < 13:
                 chunk_start = chunk_end
@@ -139,6 +145,8 @@ def label(sensor_file, model, half_w=1500):
 
         chunk_start = chunk_end
 
+    #print(len(coords))
+
     return coords
     
 def classify(preprocessed, model) -> dict:
@@ -168,4 +176,5 @@ if __name__ == '__main__':
     model = CNN()
     model.load_state_dict(torch.load(CLASSIFIER_PATH, map_location='cpu'))
     model.eval()
-    print(process_file(file_path, model))
+    results = process_file(file_path, model)
+    print(results)

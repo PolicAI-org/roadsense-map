@@ -108,6 +108,8 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
     VALUES (?, ?, ?)
   `)
 
+  //console.log(db.prepare('SELECT COUNT(*) as count FROM coordinates').get())
+
   const insertMany = db.transaction((rows: TableRow[]) => {
     for (const row of rows) {
       stmt.run(row.lat, row.lon, row.quality)
