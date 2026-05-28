@@ -5,6 +5,7 @@ import numpy as np
 class OSRMClient:
     # max 9 before codetoobig
     MATCH_CHUNK_SIZE = 9
+    OVERLAP = 2
     RADIUS = 25  # meters
 
     def __init__(self, url="http://router.project-osrm.org"):
@@ -25,15 +26,24 @@ class OSRMClient:
 
     def _chunks(self, coords):
         n = len(coords)
+        if n == 0:
+            return
+        stride = self.MATCH_CHUNK_SIZE - self.OVERLAP
         i = 0
-        while i < n:
+        while True:
             end = min(i + self.MATCH_CHUNK_SIZE, n)
-            if n - end == 1:
-                end = n
-            yield coords[i:end]
-            i = end
+            skip = 0 if i == 0 else self.OVERLAP
+            yield coords[i:end], skip
+            if end == n:
+                return
+            i += stride
 
     def _match(self, chunk):
+        ts_seconds = [int(c['timestamp']) // 1000 for c in chunk]
+        for i in range(1, len(ts_seconds)):
+            if ts_seconds[i] <= ts_seconds[i - 1]:
+                ts_seconds[i] = ts_seconds[i - 1] + 1
+
         response = requests.get(
             f"{self.url}/match/v1/driving/{self._coords_to_string(chunk)}",
             params={
@@ -41,7 +51,7 @@ class OSRMClient:
                 "overview": "full",
                 "tidy": "true",
                 "radiuses": ";".join(str(self.RADIUS) for _ in chunk),
-                "timestamps": ";".join(str(i) for i in range(len(chunk))),
+                "timestamps": ";".join(str(t) for t in ts_seconds),
             },
             timeout=15,
         )
@@ -66,8 +76,8 @@ class OSRMClient:
             return [{**c, "snapped": False} for c in coords]
 
         snapped_unique = []
-        for chunk in self._chunks(unique):
-            snapped_unique.extend(self._match(chunk))
+        for chunk, skip in self._chunks(unique):
+            snapped_unique.extend(self._match(chunk)[skip:])
 
         return [snapped_unique[i] for i in index_map]
     

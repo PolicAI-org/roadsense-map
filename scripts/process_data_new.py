@@ -89,19 +89,16 @@ def label(sensor_file, model, half_w=1500):
         if not segment.empty:
             accel = segment[segment['sensor'] == 'accel'][['x', 'y', 'z']].values
             gyro = segment[segment['sensor'] == 'gyro'][['x', 'y', 'z']].values
-            lat = segment['lat'].unique()
-            lon = segment['lon'].unique()
-            accuracies = segment['gps_accuracy'].unique()
 
-            if len(lat) != len(lon) or len(lat) != len(accuracies):
-                chunk_start = chunk_end
-                continue
-
-            valid_mask = ~(np.isnan(lat) | np.isnan(lon) | np.isnan(accuracies))
-
-            lat = lat[valid_mask]
-            lon = lon[valid_mask]
-            accuracies = accuracies[valid_mask]
+            gps = (
+                segment.dropna(subset=['lat', 'lon', 'gps_accuracy'])
+                       .drop_duplicates(subset=['lat', 'lon'])
+                       .sort_values('unix_ts_ms')
+            )
+            lat = gps['lat'].values
+            lon = gps['lon'].values
+            accuracies = gps['gps_accuracy'].values
+            timestamps = gps['unix_ts_ms'].values
 
             if len(accel) < 13 or len(gyro) < 13:
                 chunk_start = chunk_end
@@ -138,7 +135,8 @@ def label(sensor_file, model, half_w=1500):
                 coord = {
                     'lat': lat[i],
                     'lon': lon[i],
-                    'quality': result
+                    'quality': result,
+                    'timestamp': int(timestamps[i]),
                 }
 
                 coords.append(coord)
@@ -166,6 +164,8 @@ def process_output(coords: list) -> str:
     result = ""
 
     for coord in coords:
+        if not coord.get('snapped', False):
+            continue
         result += str(coord['lat']) + "," + str(coord['lon']) + "," + str(coord['quality']) + "\n"
 
     return result
