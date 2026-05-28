@@ -10,6 +10,7 @@ import uuid
 from random import randint
 from math import isnan
 from model import CNN
+from osrm_client import OSRMClient
 
 SEGMENT_INTERVAL = 1
 """
@@ -161,9 +162,7 @@ def classify(preprocessed, model) -> dict:
 
     return predicted_class
 
-def process_file(file_path: str, model: CNN) -> dict:
-    coords = label(file_path, model)
-
+def process_output(coords: list) -> str:
     result = ""
 
     for coord in coords:
@@ -171,10 +170,16 @@ def process_file(file_path: str, model: CNN) -> dict:
 
     return result
 
+
+
 if __name__ == '__main__':
     file_path = sys.argv[1]
     model = CNN()
     model.load_state_dict(torch.load(CLASSIFIER_PATH, map_location='cpu'))
     model.eval()
-    results = process_file(file_path, model)
-    print(results)
+    osrm = OSRMClient()
+    coords = label(file_path, model)
+    print(coords)
+    coords = osrm.snap(coords)
+    result = process_output(coords)
+    print(result)

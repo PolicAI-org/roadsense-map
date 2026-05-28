@@ -72,7 +72,6 @@ ipcMain.handle("insert-rows", (_event, rows) => {
     INSERT INTO coordinates (lat, lon, quality)
     VALUES (?, ?, ?)
   `);
-  console.log(db.prepare("SELECT COUNT(*) as count FROM coordinates").get());
   const insertMany = db.transaction((rows2) => {
     for (const row of rows2) {
       stmt.run(row.lat, row.lon, row.quality);
