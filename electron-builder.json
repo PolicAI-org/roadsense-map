@@ -1,15 +1,27 @@
-// @see - https://www.electron.build/configuration/configuration
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "YourAppID",
-  "asar": true,
   "productName": "YourAppName",
+  "asar": true,
   "directories": {
+    "buildResources": "buildResources",
     "output": "release/${version}"
   },
+  "extraResources": [
+    {
+      "from": "./scripts",
+      "to": "scripts"
+    }
+  ],
   "files": [
-    "dist",
-    "dist-electron"
+    {
+      "from": ".",
+      "to": ".",
+      "filter": [
+        "dist/**/*",
+        "dist-electron/**/*"
+      ]
+    }
   ],
   "mac": {
     "target": [

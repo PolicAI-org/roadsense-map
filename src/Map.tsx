@@ -14,7 +14,7 @@ type Props = {
   refreshKey: number
 }
 
-function distanceInMeters(
+/*function distanceInMeters(
   lat1: number,
   lon1: number,
   lat2: number,
@@ -34,7 +34,7 @@ function distanceInMeters(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
   return R * c
-}
+}*/
 
 export default function Map({ refreshKey }: Props) {
   const mapContainer = useRef<HTMLDivElement | null>(null)
@@ -55,7 +55,7 @@ export default function Map({ refreshKey }: Props) {
       const current = data[i]
       const next = data[i + 1]
 
-      if (distanceInMeters(current.lat, current.lon, next.lat, next.lon) > 50) continue
+      //if (distanceInMeters(current.lat, current.lon, next.lat, next.lon) > 50) continue
 
       segments.features.push({
         type: 'Feature',
@@ -84,7 +84,7 @@ export default function Map({ refreshKey }: Props) {
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://tiles.openfreemap.org/styles/liberty',
+      style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
       center: [14.5058, 46.0569],
       zoom: 7
     })

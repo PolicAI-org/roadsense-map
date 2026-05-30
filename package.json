@@ -2,30 +2,70 @@
   "name": "roadsense-map",
   "private": true,
   "version": "1.0.0",
-  "build": {
-    "asar": false,
-    "files": [
-      "dist/**/*",
-      "dist-electron/**/*"
-    ]
-  },
   "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "postinstall": "electron-rebuild -f -w better-sqlite3",
-    "test": "jest"
+    "postinstall": "electron-builder install-app-deps",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "build": {
+    "appId": "YourAppID",
+    "productName": "roadsense-map",
+    "asar": true,
+    "directories": {
+      "output": "release/${version}"
+    },
+    "extraResources": [
+      { "from": "./scripts", "to": "scripts" },
+      { "from": "./best_model_speed.onnx", "to": "best_model_speed.onnx" },
+      { "from": "./best_model_speed.onnx.data", "to": "best_model_speed.onnx.data" }
+    ],
+    "files": [
+      {
+        "from": ".",
+        "to": ".",
+        "filter": ["dist/**/*", "dist-electron/**/*"]
+      }
+    ],
+    "linux": {
+      "target": ["AppImage"],
+      "artifactName": "${productName}-Linux-${version}.${ext}"
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    }
   },
   "dependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "better-sqlite3": "^12.10.0",
+    "csv-parse": "^6.2.1",
+    "fft.js": "^4.0.4",
+    "fili": "^2.0.3",
     "maplibre-gl": "^5.24.0",
+    "onnxruntime-node": "^1.26.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.9.1",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
@@ -40,7 +80,7 @@
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",
-    "vite-plugin-electron-renderer": "^0.14.5"
-  },
-  "main": "dist-electron/main.js"
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vitest": "^2.1.9"
+  }
 }

@@ -2,10 +2,26 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import db from './db'
-import fs from 'fs'
+import { processFile } from '../src/processor'
+import { loadModel } from '../src/inference/classify'
 
-//const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+let resolvedModelPath: string
+
+process.env.APP_ROOT = path.join(__dirname, '..')
+export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
+export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
+export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
+
+app.whenReady().then(async () => {
+  resolvedModelPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'best_model_speed.onnx')
+    : path.join(process.cwd(), 'best_model_speed.onnx')
+  await loadModel(resolvedModelPath)
+  createWindow()
+})
 
 // The built directory structure
 //
@@ -17,11 +33,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // │ │ └── preload.mjs
 // │
 process.env.APP_ROOT = path.join(__dirname, '..')
-
-// 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
-export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
@@ -66,8 +77,6 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
-
 ipcMain.handle('add-marker', (_event, lat: number, lon: number) => {
   const stmt = db.prepare(`
     INSERT INTO coords (lat, lon, type)
@@ -106,6 +115,8 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
     VALUES (?, ?, ?)
   `)
 
+  //console.log(db.prepare('SELECT COUNT(*) as count FROM coordinates').get())
+
   const insertMany = db.transaction((rows: TableRow[]) => {
     for (const row of rows) {
       stmt.run(row.lat, row.lon, row.quality)
@@ -115,8 +126,9 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
   insertMany(rows)
 })
 
-ipcMain.handle('read-file', (_event, path: string) => {
-  return fs.readFileSync(path, 'utf-8')
+ipcMain.handle('read-file', async (_event, filePath: string) => {
+  const rows = await processFile(filePath, resolvedModelPath);
+  return rows.map(r => `${r.lat},${r.lon},${r.quality}`).join('\n');
 })
 
 ipcMain.handle('get-coordinates', () => {
