@@ -7,6 +7,12 @@ declare global {
         filePath: string;
         data: unknown;
       } | null>;
+      getFiles: () => Promise<{
+        id: number; 
+        file_name: string; 
+        title: string; 
+        stored_at: string 
+      }[]>
     };
   }
 }

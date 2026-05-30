@@ -109,17 +109,16 @@ type TableRow = {
     quality: number
 }
 
-ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
-  const stmt = db.prepare(`
-    INSERT INTO coordinates (lat, lon, quality)
-    VALUES (?, ?, ?)
-  `)
+ipcMain.handle('insert-rows', (_event, rows: TableRow[], filepath: string) => {
+  const insertFile = db.prepare(`INSERT INTO files (file_name, title) VALUES (?, ?)`)
+  const stmt = db.prepare(`INSERT INTO coordinates (lat, lon, quality, file_id) VALUES (?, ?, ?, ?)`)
 
-  //console.log(db.prepare('SELECT COUNT(*) as count FROM coordinates').get())
+  const filename = path.basename(filepath, '.csv')
 
   const insertMany = db.transaction((rows: TableRow[]) => {
+    const { lastInsertRowid } = insertFile.run(filename, filename)
     for (const row of rows) {
-      stmt.run(row.lat, row.lon, row.quality)
+      stmt.run(row.lat, row.lon, row.quality, lastInsertRowid)
     }
   })
 
@@ -133,7 +132,7 @@ ipcMain.handle('read-file', async (_event, filePath: string) => {
 
 ipcMain.handle('get-coordinates', () => {
   return db.prepare(`
-    SELECT lat, lon, quality
+    SELECT lat, lon, quality, file_id
     FROM coordinates
     ORDER BY id ASC
   `).all()
@@ -141,4 +140,9 @@ ipcMain.handle('get-coordinates', () => {
 
 ipcMain.handle('clear-coordinates', () => {
   db.prepare('DELETE FROM coordinates').run()
+  db.prepare('DELETE FROM files').run()
+})
+
+ipcMain.handle('get-files', () => {
+  return db.prepare(`SELECT * FROM files ORDER BY stored_at DESC`).all()
 })

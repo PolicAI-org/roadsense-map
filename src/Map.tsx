@@ -8,6 +8,7 @@ type Coordinate = {
   lat: number
   lon: number
   quality: number
+  file_id: number
 }
 
 type Props = {
