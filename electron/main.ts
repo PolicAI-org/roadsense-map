@@ -16,12 +16,9 @@ export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
 app.whenReady().then(async () => {
-  console.log('isPackaged:', app.isPackaged)
-  console.log('resourcesPath:', process.resourcesPath)
   resolvedModelPath = app.isPackaged
     ? path.join(process.resourcesPath, 'best_model_speed.onnx')
     : path.join(process.cwd(), 'best_model_speed.onnx')
-  console.log('modelPath:', resolvedModelPath)
   await loadModel(resolvedModelPath)
   createWindow()
 })
