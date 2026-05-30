@@ -5,9 +5,6 @@ const db = new Database('roadsense.db');
 db.pragma('foreign_keys = ON')
 
 db.exec(`
-  DROP TABLE IF EXISTS coordinates;
-  DROP TABLE IF EXISTS files;
-
   CREATE TABLE IF NOT EXISTS files (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     file_name TEXT NOT NULL,

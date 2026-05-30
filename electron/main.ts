@@ -40,6 +40,8 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
+    width: 1200,
+    height: 800,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, '../dist-electron/preload.mjs'),
@@ -145,4 +147,9 @@ ipcMain.handle('clear-coordinates', () => {
 
 ipcMain.handle('get-files', () => {
   return db.prepare(`SELECT * FROM files ORDER BY stored_at DESC`).all()
+})
+
+ipcMain.handle('delete-file', (_event, fileId: number) => {
+  db.prepare('DELETE FROM coordinates WHERE file_id = ?').run(fileId)
+  db.prepare('DELETE FROM files WHERE id = ?').run(fileId)
 })

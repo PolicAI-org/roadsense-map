@@ -12,7 +12,8 @@ declare global {
         file_name: string; 
         title: string; 
         stored_at: string 
-      }[]>
+      }[]>;
+      deleteFile: (fileId: number) => Promise<void>
     };
   }
 }

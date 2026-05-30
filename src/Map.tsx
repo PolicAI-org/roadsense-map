@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback} from 'react'
 import type { FeatureCollection, LineString } from 'geojson'
 import maplibregl from 'maplibre-gl'
 import type { GeoJSONSource } from 'maplibre-gl'
@@ -13,35 +13,14 @@ type Coordinate = {
 
 type Props = {
   refreshKey: number
+  visibleFileIds: number[]
 }
 
-/*function distanceInMeters(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-) {
-  const R = 6371000
-
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLon = (lon2 - lon1) * Math.PI / 180
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) ** 2
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-
-  return R * c
-}*/
-
-export default function Map({ refreshKey }: Props) {
+export default function Map({ refreshKey, visibleFileIds }: Props) {
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
 
-  const reloadRoadData = async () => {
+  const reloadRoadData = useCallback(async () => {
     if (!mapRef.current) return
 
     const data: Coordinate[] =
@@ -54,9 +33,23 @@ export default function Map({ refreshKey }: Props) {
 
     for (let i = 0; i < data.length - 1; i++) {
       const current = data[i]
-      const next = data[i + 1]
+      const current_id = current.file_id
 
-      //if (distanceInMeters(current.lat, current.lon, next.lat, next.lon) > 50) continue
+      let id_found = false
+      for(let j = 0; j < visibleFileIds.length; j++) {
+        if(visibleFileIds[j] == current.file_id) {
+          id_found = true;
+          break;
+        }
+      }
+      if (id_found == false) continue;
+
+      const next = data[i + 1]
+      const next_id = next.file_id
+
+      if (current_id != next_id) {
+        continue;
+      }
 
       segments.features.push({
         type: 'Feature',
@@ -78,7 +71,7 @@ export default function Map({ refreshKey }: Props) {
     if (source && 'setData' in source) {
       source.setData(segments)
     }
-  }
+  }, [visibleFileIds])
 
   useEffect(() => {
     if (!mapContainer.current) return
@@ -128,7 +121,7 @@ export default function Map({ refreshKey }: Props) {
 
   useEffect(() => {
     reloadRoadData()
-  }, [refreshKey])
+  }, [refreshKey, reloadRoadData])
 
   return (
     <div
