@@ -27,3 +27,4 @@ dist/*
 *.sw?
 
 samples_demo/*
+build
