@@ -2,9 +2,9 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import db from './db'
-import fs from 'fs'
-import { spawn } from 'child_process'
-import { json } from 'node:stream/consumers'
+//import fs from 'fs'
+//import { spawn } from 'child_process'
+//import { json } from 'node:stream/consumers'
 import { processFile } from '../src/processor'
 
 //const require = createRequire(import.meta.url)

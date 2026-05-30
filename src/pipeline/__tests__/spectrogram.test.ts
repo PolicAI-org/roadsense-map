@@ -9,12 +9,18 @@ type Axis = 'x' | 'y' | 'z';
 type SensorPrefix = 'accel' | 'gyro';
 type ChannelName = `${SensorPrefix}_${Axis}`;
 
-const fixture = fixtureRaw as any;
+/*const fixture = fixtureRaw as any;
 const st = fixture.spectrogram_test as {
   accel_input: Record<Axis, number[]>;
   gyro_input:  Record<Axis, number[]>;
   spectrogram: Record<ChannelName, number[][]>;
-};
+};*/
+
+const st = (fixtureRaw as { spectrogram_test: { 
+  accel_input: Record<Axis, number[]>;
+  gyro_input:  Record<Axis, number[]>;
+  spectrogram: Record<ChannelName, number[][]>;
+} }).spectrogram_test;
 
 function checkSpectrogram(channel: ChannelName) {
   const [sensor, axis] = channel.split('_') as [SensorPrefix, Axis];

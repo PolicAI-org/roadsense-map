@@ -14,7 +14,7 @@ type Props = {
   refreshKey: number
 }
 
-function distanceInMeters(
+/*function distanceInMeters(
   lat1: number,
   lon1: number,
   lat2: number,
@@ -34,7 +34,7 @@ function distanceInMeters(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
   return R * c
-}
+}*/
 
 export default function Map({ refreshKey }: Props) {
   const mapContainer = useRef<HTMLDivElement | null>(null)

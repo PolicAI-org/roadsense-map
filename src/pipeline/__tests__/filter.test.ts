@@ -5,13 +5,16 @@ import fixtureRaw from './fixtures/d7c627f9_labeler.json';
 const ATOL = 1e-5; // absolutna toleranca pod 0.00001
 
 type Axis = 'x' | 'y' | 'z';
-const fixture = fixtureRaw as any;
-const ft = fixture.filter_test as {
-  accel_input:    Record<Axis, number[]>;
-  gyro_input:     Record<Axis, number[]>;
-  accel_filtered: Record<Axis, number[]>;
-  gyro_filtered:  Record<Axis, number[]>;
-};
+interface FilterFixture {
+  filter_test: {
+    accel_input:    Record<Axis, number[]>;
+    gyro_input:     Record<Axis, number[]>;
+    accel_filtered: Record<Axis, number[]>;
+    gyro_filtered:  Record<Axis, number[]>;
+  };
+}
+
+const ft = (fixtureRaw as FilterFixture).filter_test;
 
 function checkChannel(actual: number[], expected: number[], label: string) {
   expect(actual).toHaveLength(expected.length);

@@ -18,6 +18,21 @@ export interface RawRow {
   is_stale: boolean | null;
 }
 
+interface RawCsvRow {
+  unix_ts_ms: string;
+  rel_ts_ms: string;
+  packet_counter: string;
+  sensor: string;
+  x: string;
+  y: string;
+  z: string;
+  lat: string;
+  lon: string;
+  speed_ms: string;
+  gps_accuracy: string;
+  is_stale: string;
+}
+
 function parseIsStale(val: string): boolean | null {
   if (val === 'True' || val === 'true') return true;
   if (val === 'False' || val === 'false') return false;
@@ -33,7 +48,7 @@ function parseNullableFloat(val: string): number | null {
 export function parseCsv(path: string): RawRow[] {
   const content = fs.readFileSync(path, 'utf-8');
 
-  const records: any[] = parse(content, {
+  const records: RawCsvRow[] = parse(content, {
     columns: true,
     skip_empty_lines: true,
     trim: true,
@@ -67,7 +82,7 @@ export function parseCsv(path: string): RawRow[] {
 export function parseCsvFromBuffer(buffer: Buffer): RawRow[] {
   const content = buffer.toString('utf-8');
 
-  const records: any[] = parse(content, {
+  const records: RawCsvRow[] = parse(content, {
     columns: true,
     skip_empty_lines: true,
     trim: true,
