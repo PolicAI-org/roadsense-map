@@ -26,4 +26,6 @@ dist/*
 *.sln
 *.sw?
 
+samples_demo/*
+
 build

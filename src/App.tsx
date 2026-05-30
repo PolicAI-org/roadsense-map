@@ -1,3 +1,4 @@
+import DataPanel from './components/DataPanel';
 import Map from './Map';
 import { useState } from 'react'
 
@@ -49,8 +50,9 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <button onClick={openFile}>
+    <div style={{ width: '100vw', height: '100vh', display: "flex" }}>
+      <DataPanel />
+      {/* <button onClick={openFile}>
         Izberi datoteko
       </button>
 
@@ -67,7 +69,7 @@ export default function App() {
         <p style={{ marginTop: 10 }}>
           Selected: {file}
         </p>
-      )}
+      )} */}
       <Map refreshKey={refreshKey}/>
     </div>
   );
