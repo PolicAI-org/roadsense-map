@@ -3,7 +3,6 @@ import * as path from 'path';
 import type { SegmentFeatures } from '../pipeline/features';
 
 export type Quality = 1 | 2 | 3;
-
 let session: ort.InferenceSession | null = null;
 
 export async function loadModel(modelPath?: string): Promise<void> {
