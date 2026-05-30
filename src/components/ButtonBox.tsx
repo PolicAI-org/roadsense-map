@@ -1,14 +1,10 @@
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction } from 'react'
 
 
 export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<SetStateAction<number>> }) {
-    const [file, setFile] = useState<string | null>(null)
-
     const openFile = async () => {
         const files = await window.electronAPI.openFile()
         if (!files) return
-
-        setFile(files[0])
 
         const text = await window.electronAPI.readFile(files[0])
         window.electronAPI.insertRows(parseCSV(text))
@@ -56,8 +52,13 @@ export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<S
             <span style={{ fontSize: 16, lineHeight: 1, margin: "0px" }}>+</span> 
             <p style={{ margin: "0px"}}>Uvozi posnetek</p>
         </button>
-        <button>
-            
+        <button onClick={async () => {
+          await window.electronAPI.clearCoordinates()
+          setRefreshKey(prev => prev + 1)
+        }} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            background: '#ff4a4a', color: '#fff', border: 'none', borderRadius: "0 6px 6px 0", padding: '4px 8px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+            cursor: 'pointer', transition: 'background 0.15s, transform 0.1s'}}>
+            <p style={{ margin: "0px"}}>Počisti</p>
         </button>
       {}
     </div>
