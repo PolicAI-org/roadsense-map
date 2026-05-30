@@ -1,0 +1,65 @@
+import { Dispatch, SetStateAction, useState } from 'react'
+
+
+export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<SetStateAction<number>> }) {
+    const [file, setFile] = useState<string | null>(null)
+
+    const openFile = async () => {
+        const files = await window.electronAPI.openFile()
+        if (!files) return
+
+        setFile(files[0])
+
+        const text = await window.electronAPI.readFile(files[0])
+        window.electronAPI.insertRows(parseCSV(text))
+
+        setRefreshKey(prev => prev + 1)
+    }
+
+    type TableRow = {
+      lat: number
+      lon: number
+      quality: number
+  }
+  
+  function parseCSV(text: string): TableRow[] {
+    const rows = text.trim().split('\n').slice(1);
+  
+    const result: TableRow[] = [];
+  
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+  
+      const [lat, lon, quality] = row.split(',');
+  
+      if (!lat || !lon || !quality) continue;
+      if (lat === 'null' || lon === 'null' || quality === 'null') continue;
+  
+      result.push({
+        lat: Number(lat),
+        lon: Number(lon),
+        quality: Number(quality)
+      })
+    }
+  
+    return result;
+  }
+
+  return (
+    <div style={{  height: '32px', paddingTop: "16px", paddingBottom: "16px", paddingLeft: "18px", paddingRight: "18px", display: "flex", borderBottom: "1px solid #385677" }}>
+        <button onClick={openFile} style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            background: '#4a9eff', color: '#fff', border: 'none', borderRadius: "6px 0 0 6px",
+            padding: '4px 8px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+            cursor: 'pointer', transition: 'background 0.15s, transform 0.1s'
+            }} >
+            <span style={{ fontSize: 16, lineHeight: 1, margin: "0px" }}>+</span> 
+            <p style={{ margin: "0px"}}>Uvozi posnetek</p>
+        </button>
+        <button>
+            
+        </button>
+      {}
+    </div>
+  )
+}
