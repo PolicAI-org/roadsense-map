@@ -10,5 +10,5 @@ export default function App() {
       <DataPanel setRefreshKey={setRefreshKey} />
       <Map refreshKey={refreshKey}/>
     </div>
-  )
+  );
 }
