@@ -21,27 +21,50 @@
       "output": "release/${version}"
     },
     "extraResources": [
-      { "from": "./scripts", "to": "scripts" },
-      { "from": "./best_model_speed.onnx", "to": "best_model_speed.onnx" },
-      { "from": "./best_model_speed.onnx.data", "to": "best_model_speed.onnx.data" }
+      {
+        "from": "./scripts",
+        "to": "scripts"
+      },
+      {
+        "from": "./best_model_speed.onnx",
+        "to": "best_model_speed.onnx"
+      },
+      {
+        "from": "./best_model_speed.onnx.data",
+        "to": "best_model_speed.onnx.data"
+      }
     ],
     "files": [
       {
         "from": ".",
         "to": ".",
-        "filter": ["dist/**/*", "dist-electron/**/*"]
+        "filter": [
+          "dist/**/*",
+          "dist-electron/**/*"
+        ]
       }
     ],
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "artifactName": "${productName}-Linux-${version}.${ext}"
     },
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
     },
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
     },
     "nsis": {
