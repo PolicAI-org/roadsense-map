@@ -14,7 +14,7 @@
     "test:watch": "vitest"
   },
   "build": {
-    "appId": "YourAppID",
+    "appId": "com.policai.roadsense",
     "productName": "roadsense-map",
     "asar": true,
     "directories": {
@@ -48,6 +48,7 @@
       "target": [
         "AppImage"
       ],
+      "icon": "build/icons/roadsense-512.png",
       "artifactName": "${productName}-Linux-${version}.${ext}"
     },
     "win": {

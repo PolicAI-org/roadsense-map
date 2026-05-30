@@ -40,7 +40,7 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'roadsense-512.png'),
+    icon: path.join(process.env.VITE_PUBLIC, 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, '../dist-electron/preload.mjs'),
     },
@@ -114,6 +114,8 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[], filepath: string) => {
   const stmt = db.prepare(`INSERT INTO coordinates (lat, lon, quality, file_id) VALUES (?, ?, ?, ?)`)
 
   const filename = path.basename(filepath, '.csv')
+
+  //console.log(db.prepare('SELECT COUNT(*) as count FROM coordinates').get())
 
   const insertMany = db.transaction((rows: TableRow[]) => {
     const { lastInsertRowid } = insertFile.run(filename, filename)
