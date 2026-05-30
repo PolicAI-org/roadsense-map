@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+dist-electron
 *.local
 release/*
 dist/*
@@ -24,3 +25,5 @@ dist/*
 *.njsproj
 *.sln
 *.sw?
+
+build
