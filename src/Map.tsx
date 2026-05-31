@@ -11,14 +11,19 @@ type Coordinate = {
   file_id: number
 }
 
-type Props = {
+export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
   refreshKey: number
   visibleFileIds: number[]
-}
-
-export default function Map({ refreshKey, visibleFileIds }: Props) {
+  boundsToFit: [[number, number], [number, number]]
+}) {
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
+
+  useEffect(() => {
+    if (boundsToFit && mapRef.current) {
+      mapRef.current.fitBounds(boundsToFit, { padding: 40 })
+    }
+  }, [boundsToFit])
 
   const reloadRoadData = useCallback(async () => {
     if (!mapRef.current) return

@@ -153,3 +153,21 @@ ipcMain.handle('delete-file', (_event, fileId: number) => {
   db.prepare('DELETE FROM coordinates WHERE file_id = ?').run(fileId)
   db.prepare('DELETE FROM files WHERE id = ?').run(fileId)
 })
+
+ipcMain.handle('rename-file', (_event, fileId: number, newName: string) => {
+  db.prepare('UPDATE files SET title = ? WHERE id = ?').run(newName, fileId)
+})
+
+ipcMain.handle('get-file-stats', (_event, fileId: number) => {
+  return {
+    total: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ?').get(fileId),
+    high: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 1').get(fileId),
+    medium: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 2').get(fileId),
+    low: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 3').get(fileId),
+    bounds: db.prepare(`
+      SELECT MIN(lat) as minLat, MAX(lat) as maxLat, 
+             MIN(lon) as minLon, MAX(lon) as maxLon 
+      FROM coordinates WHERE file_id = ?
+    `).get(fileId),
+  }
+})

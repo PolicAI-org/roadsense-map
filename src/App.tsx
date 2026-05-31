@@ -5,7 +5,8 @@ import { useState } from 'react'
 export default function App() {
   const [file, setFile] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [selectedFileId, setSelectedFileId] = useState<number | null>(null)
+  const [setSelectedFileId] = useState<number | null>(null)
+  const [boundsToFit, setBoundsToFit] = useState(null)
 
   const openFile = async () => {
     const files = await window.electronAPI.openFile()
@@ -34,7 +35,7 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
-      <Sidebar refreshKey={refreshKey} onSelect={setSelectedFileId} onDelete={() => setRefreshKey(prev => prev + 1)} onVisibilityChange={setVisibleFileIds} />
+      <Sidebar refreshKey={refreshKey} onSelect={setSelectedFileId} onDelete={() => setRefreshKey(prev => prev + 1)} onVisibilityChange={setVisibleFileIds} onFitBounds={setBoundsToFit} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: 8, display: 'flex', gap: 8 }}>
           <button onClick={openFile}>Naloži</button>
@@ -44,7 +45,7 @@ export default function App() {
           }}>Počisti podatke</button>
           {file && <span style={{ alignSelf: 'center', fontSize: 12 }}>Selected: {file}</span>}
         </div>
-        <Map refreshKey={refreshKey} visibleFileIds={visibleFileIds} />
+        <Map refreshKey={refreshKey} visibleFileIds={visibleFileIds} boundsToFit={boundsToFit}/>
       </div>
     </div>
   )

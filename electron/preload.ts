@@ -50,6 +50,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   deleteFile: (fileId: number) => 
     ipcRenderer.invoke('delete-file', fileId),
+
+  renameFile: (fileId: number, newName: string) => 
+    ipcRenderer.invoke('rename-file', fileId, newName),
+
+  getFileStats: (fileId: number) => 
+    ipcRenderer.invoke('get-file-stats', fileId),
 });
 
 type TableRow = {
