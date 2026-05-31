@@ -40,6 +40,8 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
+    width: 1200,
+    height: 800,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, '../dist-electron/preload.mjs'),
@@ -109,17 +111,16 @@ type TableRow = {
     quality: number
 }
 
-ipcMain.handle('insert-rows', (_event, rows: TableRow[]) => {
-  const stmt = db.prepare(`
-    INSERT INTO coordinates (lat, lon, quality)
-    VALUES (?, ?, ?)
-  `)
+ipcMain.handle('insert-rows', (_event, rows: TableRow[], filepath: string) => {
+  const insertFile = db.prepare(`INSERT INTO files (file_name, title) VALUES (?, ?)`)
+  const stmt = db.prepare(`INSERT INTO coordinates (lat, lon, quality, file_id) VALUES (?, ?, ?, ?)`)
 
-  //console.log(db.prepare('SELECT COUNT(*) as count FROM coordinates').get())
+  const filename = path.basename(filepath, '.csv')
 
   const insertMany = db.transaction((rows: TableRow[]) => {
+    const { lastInsertRowid } = insertFile.run(filename, filename)
     for (const row of rows) {
-      stmt.run(row.lat, row.lon, row.quality)
+      stmt.run(row.lat, row.lon, row.quality, lastInsertRowid)
     }
   })
 
@@ -133,7 +134,7 @@ ipcMain.handle('read-file', async (_event, filePath: string) => {
 
 ipcMain.handle('get-coordinates', () => {
   return db.prepare(`
-    SELECT lat, lon, quality
+    SELECT lat, lon, quality, file_id
     FROM coordinates
     ORDER BY id ASC
   `).all()
@@ -141,4 +142,32 @@ ipcMain.handle('get-coordinates', () => {
 
 ipcMain.handle('clear-coordinates', () => {
   db.prepare('DELETE FROM coordinates').run()
+  db.prepare('DELETE FROM files').run()
+})
+
+ipcMain.handle('get-files', () => {
+  return db.prepare(`SELECT * FROM files ORDER BY stored_at DESC`).all()
+})
+
+ipcMain.handle('delete-file', (_event, fileId: number) => {
+  db.prepare('DELETE FROM coordinates WHERE file_id = ?').run(fileId)
+  db.prepare('DELETE FROM files WHERE id = ?').run(fileId)
+})
+
+ipcMain.handle('rename-file', (_event, fileId: number, newName: string) => {
+  db.prepare('UPDATE files SET title = ? WHERE id = ?').run(newName, fileId)
+})
+
+ipcMain.handle('get-file-stats', (_event, fileId: number) => {
+  return {
+    total: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ?').get(fileId),
+    high: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 1').get(fileId),
+    medium: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 2').get(fileId),
+    low: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 3').get(fileId),
+    bounds: db.prepare(`
+      SELECT MIN(lat) as minLat, MAX(lat) as maxLat, 
+             MIN(lon) as minLon, MAX(lon) as maxLon 
+      FROM coordinates WHERE file_id = ?
+    `).get(fileId),
+  }
 })
