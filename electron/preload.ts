@@ -36,7 +36,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readFile: (path: string) =>
     ipcRenderer.invoke('read-file', path),
 
-  insertRows: (rows: TableRow[], filepath: string) =>
+  insertRows: (rows: TableRow[], filepath: string,) =>
     ipcRenderer.invoke('insert-rows', rows, filepath),
 
   getCoordinates: () =>

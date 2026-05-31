@@ -14,7 +14,7 @@ type Coordinate = {
 export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
   refreshKey: number
   visibleFileIds: number[]
-  boundsToFit: [[number, number], [number, number]]
+  boundsToFit: [[number, number], [number, number]] | null
 }) {
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)

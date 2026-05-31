@@ -5,8 +5,9 @@ import { useState } from 'react'
 export default function App() {
   const [file, setFile] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [setSelectedFileId] = useState<number | null>(null)
-  const [boundsToFit, setBoundsToFit] = useState(null)
+  const [_selectedFileId, setSelectedFileId] = useState<number | null>(null)
+  type Bounds = [[number, number], [number, number]]
+  const [boundsToFit, setBoundsToFit] = useState<Bounds | null>(null)
 
   const openFile = async () => {
     const files = await window.electronAPI.openFile()
@@ -35,7 +36,12 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
-      <Sidebar refreshKey={refreshKey} onSelect={setSelectedFileId} onDelete={() => setRefreshKey(prev => prev + 1)} onVisibilityChange={setVisibleFileIds} onFitBounds={setBoundsToFit} />
+      <Sidebar 
+      refreshKey={refreshKey} 
+      onSelect={(id) => setSelectedFileId(id)} 
+      onDelete={() => setRefreshKey(prev => prev + 1)} 
+      onVisibilityChange={setVisibleFileIds} 
+      onFitBounds={setBoundsToFit} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: 8, display: 'flex', gap: 8 }}>
           <button onClick={openFile}>Naloži</button>

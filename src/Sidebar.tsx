@@ -1,4 +1,3 @@
-import { stat } from 'node:fs'
 import { useEffect, useState } from 'react'
 
 interface FileEntry {
@@ -10,7 +9,7 @@ interface FileEntry {
 
 export default function Sidebar({ refreshKey, onSelect, onDelete, onVisibilityChange, onFitBounds}: { 
   refreshKey: number
-  onSelect: (id: number) => void
+  onSelect: (id: number | null) => void
   onDelete: () => void
   onVisibilityChange: (visibleIds: number[]) => void
   onFitBounds: (bounds: [[number, number], [number, number]]) => void
