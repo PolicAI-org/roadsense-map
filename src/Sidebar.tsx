@@ -7,6 +7,15 @@ interface FileEntry {
   stored_at: string
 }
 
+interface FileStats {
+  total: { count: number }
+  high: { count: number }
+  medium: { count: number }
+  low: { count: number }
+  bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number }
+}
+
+
 export default function Sidebar({ refreshKey, onSelect, onDelete, onVisibilityChange, onFitBounds}: { 
   refreshKey: number
   onSelect: (id: number | null) => void
@@ -30,7 +39,7 @@ export default function Sidebar({ refreshKey, onSelect, onDelete, onVisibilityCh
     const [renaming, setRenaming] = useState(false)
     const [newName, setNewName] = useState('')
 
-    const [stats, setStats] = useState<any>(null)
+    const [stats, setStats] = useState<FileStats | null>(null)
 
     const toggleVisibility = (id: number) => {
         setVisible(prev => {
@@ -43,11 +52,11 @@ export default function Sidebar({ refreshKey, onSelect, onDelete, onVisibilityCh
 
     useEffect(() => {
         onVisibilityChange([...visible])
-    }, [visible])
+    }, [visible, onVisibilityChange])
 
     useEffect(() => {
-    window.electronAPI.getFiles().then(setFiles)
-    }, [refreshKey,])
+        window.electronAPI.getFiles().then(setFiles)
+    }, [refreshKey])
 
     useEffect(() => {
         if (infoFile) {

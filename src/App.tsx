@@ -5,7 +5,7 @@ import { useState } from 'react'
 export default function App() {
   const [file, setFile] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [_selectedFileId, setSelectedFileId] = useState<number | null>(null)
+  const [, setSelectedFileId] = useState<number | null>(null)
   type Bounds = [[number, number], [number, number]]
   const [boundsToFit, setBoundsToFit] = useState<Bounds | null>(null)
 
