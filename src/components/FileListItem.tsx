@@ -1,3 +1,5 @@
+import { ChevronRight, Eye, EyeOff, Trash2 } from "lucide-react"
+
 interface Props {
   file: FileEntry
   selected: boolean
@@ -26,12 +28,15 @@ export default function FileListItem({ file, selected, visible, onSelect, onDele
         <div style={{ fontWeight: 'bold', fontSize: 14 }}>{file.title}</div>
         <div style={{ fontSize: 11, color: 'var(--text2)' }}>{file.stored_at}</div>
       </div>
-      <button onClick={e => { e.stopPropagation(); onDelete() }}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--xbad)', fontSize: 16 }}>✕</button>
-      <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, opacity: visible ? 1 : 0.3 }}>👁</button>
-      <button onClick={e => { e.stopPropagation(); onInfo() }}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}>ℹ️</button>
+      <div style={{justifyContent: "right"}}>
+        <button onClick={e => { e.stopPropagation(); onDelete() }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--xbad)', fontSize: 16 }} title="Izbriši"><Trash2 /></button>
+        <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, opacity: visible ? 1 : 0.3 }} title={!visible ? "Skrij" : "Pokaži"}>{!visible ? <EyeOff /> : <Eye />}</button>
+        <button onClick={e => { e.stopPropagation(); onInfo() }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }} title="Več detajlov"><ChevronRight /></button>
+      </div>
+      
     </div>
   )
 }

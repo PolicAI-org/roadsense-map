@@ -1,3 +1,4 @@
+import { FolderUp } from 'lucide-react'
 import { Dispatch, SetStateAction } from 'react'
 
 
@@ -49,7 +50,7 @@ export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<S
             padding: '6px 8px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
             cursor: 'pointer', transition: 'background 0.15s, transform 0.1s'
             }} >
-            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
+            <FolderUp size={12}/>
             <span>Uvozi posnetek</span>
         </button>
         <button onClick={async () => {

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Eye, EyeOff, Pencil, X, ZoomIn } from 'lucide-react'
 
 interface Props {
   file: FileEntry
@@ -43,7 +44,7 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
               [stats.bounds.maxLon, stats.bounds.maxLat],
             ])
           }
-        }}>🔍</button>
+        }}><ZoomIn size={16} /></button>
         <button
           onClick={onToggleVisibility}
           style={{
@@ -53,11 +54,11 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
             fontSize: 16,
             opacity: visible ? 1 : 0.3,
           }}
-        >👁</button>
+        >{visible ? <Eye size={16} /> : <EyeOff size={16} />}</button>
         <button
           onClick={onClose}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}
-        >❌</button>
+        ><X size={16} /></button>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -78,7 +79,7 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
         ) : (
           <h2 style={{ margin: 0 }}>{file.title}</h2>
         )}
-        <button onClick={() => { setNewName(file.title); setRenaming(true) }}>✏️</button>
+        <button onClick={() => { setNewName(file.title); setRenaming(true) }}><Pencil size={16} /></button>
       </div>
 
       {Divider}

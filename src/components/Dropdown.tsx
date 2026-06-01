@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
 
 interface Props {
@@ -27,7 +28,9 @@ export default function Dropdown({ label, count, defaultOpen = true, children }:
         <span style={{ fontWeight: 'bold', fontSize: 13 }}>
           {label.toUpperCase()}{count !== undefined ? ` (${count})` : ''}
         </span>
-        <span style={{ fontSize: 10 }}>{open ? '▲' : '▼'}</span>
+        {
+            open ? <ChevronUp /> : <ChevronDown />
+        }
       </div>
       {open && (
         <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>{children}</div>
