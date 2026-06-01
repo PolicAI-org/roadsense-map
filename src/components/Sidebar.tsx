@@ -1,0 +1,91 @@
+import { useEffect, useState } from 'react'
+import FileListItem from './FileListItem'
+import InfoPanel from './InfoPanel'
+
+export default function Sidebar({ refreshKey, onSelect, onDelete, onVisibilityChange, onFitBounds }: {
+  refreshKey: number
+  onSelect: (id: number | null) => void
+  onDelete: () => void
+  onVisibilityChange: (visibleIds: number[]) => void
+  onFitBounds: (bounds: [[number, number], [number, number]]) => void
+}) {
+  const [files, setFiles] = useState<FileEntry[]>([])
+  const [selected, setSelected] = useState<number | null>(null)
+  const [visible, setVisible] = useState<Set<number>>(new Set())
+  const [infoFile, setInfoFile] = useState<FileEntry | null>(null)
+  const [stats, setStats] = useState<FileStats | null>(null)
+
+  const toggleVisibility = (id: number) => {
+    setVisible(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  useEffect(() => {
+    onVisibilityChange([...visible])
+  }, [visible, onVisibilityChange])
+
+  useEffect(() => {
+    window.electronAPI.getFiles().then(setFiles)
+  }, [refreshKey])
+
+  useEffect(() => {
+    if (infoFile) {
+      window.electronAPI.getFileStats(infoFile.id).then(setStats)
+    }
+  }, [infoFile])
+
+  return (
+    <div style={{
+      width: 348,
+      height: '100vh',
+      borderRight: '1px solid #ccc',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <h3 style={{ padding: '12px 16px', margin: 0 }}>Meritve</h3>
+
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {files.map(f => (
+          <FileListItem
+            key={f.id}
+            file={f}
+            selected={selected === f.id}
+            visible={visible.has(f.id)}
+            onSelect={() => { setSelected(f.id); onSelect(f.id) }}
+            onDelete={async () => {
+              await window.electronAPI.deleteFile(f.id)
+              setFiles(prev => prev.filter(x => x.id !== f.id))
+              if (selected === f.id) { setSelected(null); onSelect(null) }
+              onDelete()
+            }}
+            onToggleVisibility={() => toggleVisibility(f.id)}
+            onInfo={() => { setStats(null); setInfoFile(f) }}
+          />
+        ))}
+        {files.length === 0 && (
+          <p style={{ padding: 16, color: '#aaa' }}>...</p>
+        )}
+      </div>
+
+      {infoFile && (
+        <InfoPanel
+          file={infoFile}
+          stats={stats}
+          visible={visible.has(infoFile.id)}
+          onClose={() => setInfoFile(null)}
+          onToggleVisibility={() => toggleVisibility(infoFile.id)}
+          onFitBounds={onFitBounds}
+          onRename={async (id, name) => {
+            await window.electronAPI.renameFile(id, name)
+            setFiles(prev => prev.map(f => f.id === id ? { ...f, title: name } : f))
+            setInfoFile((prev: any) => prev ? { ...prev, title: name } : null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
