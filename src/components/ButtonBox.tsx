@@ -42,23 +42,23 @@ export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<S
   }
 
   return (
-    <div style={{  height: '32px', paddingTop: "16px", paddingBottom: "16px", paddingLeft: "18px", paddingRight: "18px", display: "flex", borderBottom: "1px solid #385677" }}>
+    <div style={{ padding: "16px 18px", display: "flex", alignItems: 'stretch', borderBottom: "1px solid #385677" }}>
         <button onClick={openFile} style={{
-            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             background: '#4a9eff', color: '#fff', border: 'none', borderRadius: "6px 0 0 6px",
-            padding: '4px 8px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+            padding: '6px 8px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
             cursor: 'pointer', transition: 'background 0.15s, transform 0.1s'
             }} >
-            <span style={{ fontSize: 16, lineHeight: 1, margin: "0px" }}>+</span> 
-            <p style={{ margin: "0px"}}>Uvozi posnetek</p>
+            <span style={{ fontSize: 16, lineHeight: 1 }}>+</span>
+            <span>Uvozi posnetek</span>
         </button>
         <button onClick={async () => {
           await window.electronAPI.clearCoordinates()
           setRefreshKey(prev => prev + 1)
-        }} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: '#ff4a4a', color: '#fff', border: 'none', borderRadius: "0 6px 6px 0", padding: '4px 8px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
+        }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: '#ff4a4a', color: '#fff', border: 'none', borderRadius: "0 6px 6px 0", padding: '6px 12px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
             cursor: 'pointer', transition: 'background 0.15s, transform 0.1s'}}>
-            <p style={{ margin: "0px"}}>Počisti</p>
+            <span>Počisti</span>
         </button>
       {}
     </div>

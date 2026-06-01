@@ -3,6 +3,7 @@ import FileListItem from './FileListItem'
 import InfoPanel from './InfoPanel'
 import IconBar from './IconBar'
 import ButtonBox from './ButtonBox'
+import Dropdown from './Dropdown'
 
 export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete, onVisibilityChange, onFitBounds }: {
   refreshKey: number
@@ -45,7 +46,6 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
     <div style={{
       height: '100vh', 
       background: '#0d1931', 
-      overflowY: 'auto', 
       minWidth: "280px", 
       maxWidth: "480px", 
       flex: "1",
@@ -55,7 +55,19 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
     }}>
       <IconBar />
       <ButtonBox setRefreshKey={setRefreshKey} />
-      <h3 style={{ padding: '12px 16px', margin: 0 }}>Meritve</h3>
+      <Dropdown label="Meritve" count={files.length}>
+        {files.map(f => <FileListItem key={f.id} file={f} selected={selected === f.id} visible={visible.has(f.id)} 
+        onSelect={() => { setSelected(f.id); onSelect(f.id) }}
+        onDelete={async () => {
+          await window.electronAPI.deleteFile(f.id)
+          setFiles(prev => prev.filter(x => x.id !== f.id))
+          if (selected === f.id) { setSelected(null); onSelect(null) }
+          onDelete()
+        }} 
+        onToggleVisibility={() => toggleVisibility(f.id)}
+        onInfo={() => { setStats(null); setInfoFile(f) }} />)}
+      </Dropdown>
+      {/* <h3 style={{ padding: '12px 16px', margin: 0 }}>Meritve</h3>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {files.map(f => (
@@ -79,6 +91,7 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
           <p style={{ padding: 16, color: '#aaa' }}>...</p>
         )}
       </div>
+      */}
 
       {infoFile && (
         <InfoPanel
@@ -94,7 +107,7 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
             setInfoFile((prev: any) => prev ? { ...prev, title: name } : null)
           }}
         />
-      )}
+      )} 
     </div>
   )
 }
