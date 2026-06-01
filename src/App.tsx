@@ -15,11 +15,12 @@ export default function App() {
     <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
        <Sidebar 
           refreshKey={refreshKey} 
+          setRefreshKey={setRefreshKey}
           onSelect={(id) => setSelectedFileId(id)} 
           onDelete={() => setRefreshKey(prev => prev + 1)} 
           onVisibilityChange={setVisibleFileIds} 
           onFitBounds={setBoundsToFit} />
-      <Map refreshKey={refreshKey} visibleFileIds={[]} boundsToFit={null}/>
+      <Map refreshKey={refreshKey} visibleFileIds={visibleFileIds} boundsToFit={boundsToFit}/>
     </div>
   );
 }

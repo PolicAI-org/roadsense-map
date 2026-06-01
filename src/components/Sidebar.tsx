@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import FileListItem from './FileListItem'
 import InfoPanel from './InfoPanel'
+import IconBar from './IconBar'
+import ButtonBox from './ButtonBox'
 
-export default function Sidebar({ refreshKey, onSelect, onDelete, onVisibilityChange, onFitBounds }: {
+export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete, onVisibilityChange, onFitBounds }: {
   refreshKey: number
+  setRefreshKey: React.Dispatch<React.SetStateAction<number>>
   onSelect: (id: number | null) => void
   onDelete: () => void
   onVisibilityChange: (visibleIds: number[]) => void
@@ -40,12 +43,18 @@ export default function Sidebar({ refreshKey, onSelect, onDelete, onVisibilityCh
 
   return (
     <div style={{
-      width: 348,
-      height: '100vh',
+      height: '100vh', 
+      background: '#0d1931', 
+      overflowY: 'auto', 
+      minWidth: "280px", 
+      maxWidth: "480px", 
+      flex: "1",
       borderRight: '1px solid #ccc',
       display: 'flex',
       flexDirection: 'column',
     }}>
+      <IconBar />
+      <ButtonBox setRefreshKey={setRefreshKey} />
       <h3 style={{ padding: '12px 16px', margin: 0 }}>Meritve</h3>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
