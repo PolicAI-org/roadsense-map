@@ -19,6 +19,8 @@ declare global {
       getCoordinates: () => Promise<{ lat: number; lon: number; quality: number; file_id: number }[]>
       getCoordinatesByFile: (fileId: number) => Promise<{ lat: number; lon: number; quality: number }[]>
       clearCoordinates: () => Promise<void>
+      getTheme: () => Promise<'dark' | 'light' | 'system'>
+      onThemeChange: (callback: (theme: 'dark' | 'light' | 'system') => void) => void
     }
   }
 }

@@ -1,9 +1,84 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs'
 import db from './db'
 import { processFile } from '../src/processor'
 import { loadModel } from '../src/inference/classify'
+
+type ThemeSource = 'dark' | 'light' | 'system'
+let currentTheme: ThemeSource = 'system'
+
+function getSettingsPath() {
+  return path.join(app.getPath('userData'), 'settings.json')
+}
+
+function loadTheme(): ThemeSource {
+  try {
+    const data = JSON.parse(fs.readFileSync(getSettingsPath(), 'utf8'))
+    const t = data.theme
+    if (t === 'dark' || t === 'light' || t === 'system') return t
+  } catch {}
+  return 'system'
+}
+
+function saveTheme(theme: ThemeSource) {
+  try {
+    const p = getSettingsPath()
+    const existing = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : {}
+    fs.writeFileSync(p, JSON.stringify({ ...existing, theme }))
+  } catch {}
+}
+
+function setTheme(theme: ThemeSource) {
+  currentTheme = theme
+  nativeTheme.themeSource = theme
+  saveTheme(theme)
+  buildMenu()
+  win?.webContents.send('theme-changed', theme)
+}
+
+function buildMenu() {
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: 'Pogled',
+      submenu: [
+        { role: 'reload' as const },
+        { role: 'forceReload' as const },
+        { role: 'toggleDevTools' as const },
+        { type: 'separator' as const },
+        { role: 'resetZoom' as const },
+        { role: 'zoomIn' as const },
+        { role: 'zoomOut' as const },
+        { type: 'separator' as const },
+        { role: 'togglefullscreen' as const },
+        { type: 'separator' as const },
+        {
+          label: 'Temni način',
+          type: 'radio',
+          checked: currentTheme === 'dark',
+          click: () => setTheme('dark'),
+        },
+        {
+          label: 'Svetli način',
+          type: 'radio',
+          checked: currentTheme === 'light',
+          click: () => setTheme('light'),
+        },
+        {
+          label: 'Sistem',
+          type: 'radio',
+          checked: currentTheme === 'system',
+          click: () => setTheme('system'),
+        },
+      ],
+    },
+    { label: "Uredi", role: 'editMenu' as const },
+    { label: 'Okno', role: 'windowMenu' as const },
+    // { label: 'Pomoč', role: 'help' as const },
+  ]
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -16,6 +91,10 @@ export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
 app.whenReady().then(async () => {
+  currentTheme = loadTheme()
+  nativeTheme.themeSource = currentTheme
+  buildMenu()
+
   resolvedModelPath = app.isPackaged
     ? path.join(process.resourcesPath, 'best_model_speed.onnx')
     : path.join(process.cwd(), 'best_model_speed.onnx')
@@ -165,9 +244,11 @@ ipcMain.handle('get-file-stats', (_event, fileId: number) => {
     medium: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 2').get(fileId),
     low: db.prepare('SELECT COUNT(*) as count FROM coordinates WHERE file_id = ? AND quality = 3').get(fileId),
     bounds: db.prepare(`
-      SELECT MIN(lat) as minLat, MAX(lat) as maxLat, 
-             MIN(lon) as minLon, MAX(lon) as maxLon 
+      SELECT MIN(lat) as minLat, MAX(lat) as maxLat,
+             MIN(lon) as minLon, MAX(lon) as maxLon
       FROM coordinates WHERE file_id = ?
     `).get(fileId),
   }
 })
+
+ipcMain.handle('get-theme', () => currentTheme)

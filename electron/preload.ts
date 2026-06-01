@@ -54,8 +54,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   renameFile: (fileId: number, newName: string) => 
     ipcRenderer.invoke('rename-file', fileId, newName),
 
-  getFileStats: (fileId: number) => 
+  getFileStats: (fileId: number) =>
     ipcRenderer.invoke('get-file-stats', fileId),
+
+  getTheme: () =>
+    ipcRenderer.invoke('get-theme'),
+
+  onThemeChange: (callback: (theme: string) => void) => {
+    ipcRenderer.on('theme-changed', (_event, theme) => callback(theme))
+  },
 });
 
 type TableRow = {
