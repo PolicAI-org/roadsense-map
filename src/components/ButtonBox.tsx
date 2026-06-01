@@ -7,7 +7,7 @@ export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<S
         if (!files) return
 
         const text = await window.electronAPI.readFile(files[0])
-        window.electronAPI.insertRows(parseCSV(text))
+        window.electronAPI.insertRows(parseCSV(text), files[0])
 
         setRefreshKey(prev => prev + 1)
     }
@@ -42,10 +42,10 @@ export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<S
   }
 
   return (
-    <div style={{ padding: "16px 18px", display: "flex", alignItems: 'stretch', borderBottom: "1px solid #385677" }}>
+    <div style={{ padding: "16px 18px", display: "flex", alignItems: 'stretch', borderBottom: "1px solid var(--border2)" }}>
         <button onClick={openFile} style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: '#4a9eff', color: '#fff', border: 'none', borderRadius: "6px 0 0 6px",
+            background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: "6px 0 0 6px",
             padding: '6px 8px', fontFamily: 'inherit', fontSize: 13, fontWeight: 500,
             cursor: 'pointer', transition: 'background 0.15s, transform 0.1s'
             }} >

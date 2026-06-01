@@ -45,11 +45,11 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
   return (
     <div style={{
       height: '100vh', 
-      background: '#0d1931', 
+      background: 'var(--bg2)',
       minWidth: "280px", 
       maxWidth: "480px", 
       flex: "1",
-      borderRight: '1px solid #ccc',
+      borderRight: '1px solid var(--border)',
       display: 'flex',
       flexDirection: 'column',
     }}>

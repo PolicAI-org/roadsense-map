@@ -21,7 +21,7 @@ export default function Dropdown({ label, count, defaultOpen = true, children }:
           justifyContent: 'space-between',
           alignItems: 'center',
           userSelect: 'none',
-          borderBottom: '1px solid #eee',
+          borderBottom: '1px solid var(--border)',
         }}
       >
         <span style={{ fontWeight: 'bold', fontSize: 13 }}>

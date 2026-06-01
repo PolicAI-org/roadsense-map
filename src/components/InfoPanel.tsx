@@ -7,7 +7,7 @@ interface Props {
   onClose: () => void
   onToggleVisibility: () => void
   onFitBounds: (bounds: [[number, number], [number, number]]) => void
-  onRename: (id: number, name: string) => void
+  onRename: (id: number, name: string) => Promise<void>
 }
 
 export default function InfoPanel({ file, stats, visible, onClose, onToggleVisibility, onFitBounds, onRename }: Props) {
@@ -16,7 +16,7 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
 
   const Divider = <hr style={{
     border: 'none',
-    borderTop: '3px solid black',
+    borderTop: '3px solid var(--border2)',
     margin: '8px 0',
     }} />
 
@@ -27,9 +27,9 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
       left: 0,
       width: 300,
       height: '100vh',
-      backgroundColor: 'white',
-      borderRight: '1px solid #ccc',
-      boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
+      backgroundColor: 'var(--bg3)',
+      borderRight: '1px solid var(--border)',
+      boxShadow: 'var(--shadow-lg)',
       display: 'flex',
       flexDirection: 'column',
       zIndex: 100,
