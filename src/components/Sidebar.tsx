@@ -3,7 +3,9 @@ import FileListItem from './FileListItem'
 import InfoPanel from './InfoPanel'
 import IconBar from './IconBar'
 import ButtonBox from './ButtonBox'
+import DropdownList from './DropdownList'
 import Dropdown from './Dropdown'
+import StatsBox from './StatsBox'
 
 export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete, onVisibilityChange, onFitBounds }: {
   refreshKey: number
@@ -18,6 +20,7 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
   const [visible, setVisible] = useState<Set<number>>(new Set())
   const [infoFile, setInfoFile] = useState<FileEntry | null>(null)
   const [stats, setStats] = useState<FileStats | null>(null)
+  const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null)
 
   const toggleVisibility = (id: number) => {
     setVisible(prev => {
@@ -34,6 +37,7 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
 
   useEffect(() => {
     window.electronAPI.getFiles().then(setFiles)
+    window.electronAPI.getGlobalStats().then(setGlobalStats)
   }, [refreshKey])
 
   useEffect(() => {
@@ -55,7 +59,10 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
     }}>
       <IconBar />
       <ButtonBox setRefreshKey={setRefreshKey} />
-      <Dropdown label="Meritve" count={files.length}>
+      <Dropdown label="Statistika" >
+        <StatsBox stats={globalStats} />
+      </Dropdown>
+      <DropdownList label="Meritve" count={files.length}>
         {files.map(f => <FileListItem key={f.id} file={f} selected={selected === f.id} visible={visible.has(f.id)} 
         onSelect={() => { setSelected(f.id); onSelect(f.id) }}
         onDelete={async () => {
@@ -66,32 +73,7 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
         }} 
         onToggleVisibility={() => toggleVisibility(f.id)}
         onInfo={() => { setStats(null); setInfoFile(f) }} />)}
-      </Dropdown>
-      {/* <h3 style={{ padding: '12px 16px', margin: 0 }}>Meritve</h3>
-
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {files.map(f => (
-          <FileListItem
-            key={f.id}
-            file={f}
-            selected={selected === f.id}
-            visible={visible.has(f.id)}
-            onSelect={() => { setSelected(f.id); onSelect(f.id) }}
-            onDelete={async () => {
-              await window.electronAPI.deleteFile(f.id)
-              setFiles(prev => prev.filter(x => x.id !== f.id))
-              if (selected === f.id) { setSelected(null); onSelect(null) }
-              onDelete()
-            }}
-            onToggleVisibility={() => toggleVisibility(f.id)}
-            onInfo={() => { setStats(null); setInfoFile(f) }}
-          />
-        ))}
-        {files.length === 0 && (
-          <p style={{ padding: 16, color: '#aaa' }}>...</p>
-        )}
-      </div>
-      */}
+      </DropdownList>
 
       {infoFile && (
         <InfoPanel

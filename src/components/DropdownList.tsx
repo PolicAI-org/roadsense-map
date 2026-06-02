@@ -8,11 +8,11 @@ interface Props {
   children: React.ReactNode
 }
 
-export default function Dropdown({ label, count, defaultOpen = true, children }: Props) {
+export default function DropdownList({ label, count, defaultOpen = true, children }: Props) {
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <div
         onClick={() => setOpen(o => !o)}
         style={{
@@ -28,12 +28,12 @@ export default function Dropdown({ label, count, defaultOpen = true, children }:
         <span style={{ fontWeight: 'bold', fontSize: 13 }}>
           {label.toUpperCase()}{count !== undefined ? ` (${count})` : ''}
         </span>
-        {open ? <ChevronUp /> : <ChevronDown />}
+        {
+            open ? <ChevronUp /> : <ChevronDown />
+        }
       </div>
       {open && (
-        <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--border)' }}>
-          {children}
-        </div>
+        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>{children}</div>
       )}
     </div>
   )

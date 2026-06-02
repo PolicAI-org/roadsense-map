@@ -252,3 +252,32 @@ ipcMain.handle('get-file-stats', (_event, fileId: number) => {
 })
 
 ipcMain.handle('get-theme', () => currentTheme)
+
+ipcMain.handle('get-global-stats', () => {
+  const rows = db.prepare(`
+    SELECT lat, lon, quality, file_id
+    FROM coordinates
+    ORDER BY file_id ASC, id ASC
+  `).all() as { lat: number; lon: number; quality: number; file_id: number }[]
+
+  function haversine(a: typeof rows[0], b: typeof rows[0]) {
+    const R = 6371000
+    const dLat = (b.lat - a.lat) * Math.PI / 180
+    const dLon = (b.lon - a.lon) * Math.PI / 180
+    const x = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2
+    return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x))
+  }
+
+  let total = 0, high = 0, medium = 0, low = 0
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i].file_id !== rows[i-1].file_id) continue
+    const d = haversine(rows[i-1], rows[i]) / 1000  
+    total += d
+    if (rows[i].quality === 1) high += d
+    else if (rows[i].quality === 2) medium += d
+    else low += d
+  }
+
+  return { totalKm: total, highKm: high, mediumKm: medium, lowKm: low }
+})
