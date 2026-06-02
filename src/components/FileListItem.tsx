@@ -30,11 +30,11 @@ export default function FileListItem({ file, selected, visible, onSelect, onDele
       </div>
       <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
         <button onClick={e => { e.stopPropagation(); onDelete() }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--xbad)', fontSize: 16 }} title="Izbriši"><Trash2 /></button>
+          className="icon-btn icon-btn-danger" title="Izbriši"><Trash2 /></button>
         <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, opacity: visible ? 1 : 0.3 }} title={!visible ? "Skrij" : "Pokaži"}>{!visible ? <EyeOff /> : <Eye />}</button>
+          className="icon-btn" style={{ opacity: visible ? 1 : 0.3 }} title={!visible ? "Skrij" : "Pokaži"}>{!visible ? <EyeOff /> : <Eye />}</button>
         <button onClick={e => { e.stopPropagation(); onInfo() }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }} title="Več detajlov"><ChevronRight /></button>
+          className="icon-btn" title="Več detajlov"><ChevronRight /></button>
       </div>
       
     </div>

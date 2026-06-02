@@ -10,8 +10,8 @@
   color-scheme: dark;
 
   /* ── Surfaces ── */
-  --bg:        #080f1e;
-  --bg2:       #0c1529;
+  --bg:        #060b16;
+  --bg2:       #0a111f;
   --bg3:       #101c36;
   --card:      #131e38;
   --card2:     #172240;
@@ -26,15 +26,18 @@
   --text3:     #4a6888;
 
   /* ── Road quality (semantic) ── */
-  --nice:      #00e676;
-  --bad:       #ff6d00;
-  --xbad:      #d50000;
+  --nice:  #00e676;
+  --bad:   #ff6d00;
+  --xbad:  #c42b2b;
   --nice-bg:   rgba(0,230,118,0.10);
   --bad-bg:    rgba(255,109,0,0.10);
-  --xbad-bg:   rgba(213,0,0,0.10);
+  --xbad-bg: rgba(196,43,43,0.10);
 
   /* ── Accent ── */
-  --accent:    #3a8ef6;
+  --accent:    #2f6fd0;
+  --accent-hover: #3a82e8;
+  --danger:       #c43c3c;
+  --danger-hover: #d24a4a;
 
   /* ── Chrome ── */
   --titlebar:    #040810;
@@ -74,7 +77,9 @@
   --bad-bg:    rgba(226,92,0,0.12);
   --xbad-bg:   rgba(194,0,0,0.10);
 
-  --accent:    #2a6fdb;
+  --accent:       #2a6fdb;
+  --accent-hover: #1f5bbf;
+  --danger-hover: #b03030;
 
   --titlebar:    #e4e8f0;
   --titlebar-bd: #d2d9e5;
@@ -112,3 +117,54 @@ a {
 button {
   font-family: inherit;
 }
+
+.bb-import {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px 0 0 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.bb-import:hover { background: var(--accent-hover); }
+
+.bb-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.bb-clear:hover { background: var(--danger-hover); }
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text2);
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.icon-btn:hover { color: var(--text); }
+
+.icon-btn-danger { color: var(--xbad); }
+.icon-btn-danger:hover { color: var(--xbad); background: var(--xbad-bg); }

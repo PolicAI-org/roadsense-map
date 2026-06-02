@@ -37,7 +37,7 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
       padding: 24,
     }}>
       <div style={{ display: 'flex', gap: 4, alignItems: 'right', marginBottom: 8, justifyContent: 'flex-end' }}>
-        <button onClick={() => {
+        <button className="icon-btn" onClick={() => {
           if (stats?.bounds) {
             onFitBounds([
               [stats.bounds.minLon, stats.bounds.minLat],
@@ -45,20 +45,10 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
             ])
           }
         }}><ZoomIn size={16} /></button>
-        <button
-          onClick={onToggleVisibility}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: 16,
-            opacity: visible ? 1 : 0.3,
-          }}
+        <button className="icon-btn" onClick={onToggleVisibility}
+          style={{ opacity: visible ? 1 : 0.3 }}
         >{visible ? <Eye size={16} /> : <EyeOff size={16} />}</button>
-        <button
-          onClick={onClose}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}
-        ><X size={16} /></button>
+        <button className="icon-btn" onClick={onClose}><X size={16} /></button>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -79,7 +69,7 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
         ) : (
           <h2 style={{ margin: 0 }}>{file.title}</h2>
         )}
-        <button onClick={() => { setNewName(file.title); setRenaming(true) }}><Pencil size={16} /></button>
+        <button className="icon-btn" onClick={() => { setNewName(file.title); setRenaming(true) }}><Pencil size={16} /></button>
       </div>
 
       {Divider}
