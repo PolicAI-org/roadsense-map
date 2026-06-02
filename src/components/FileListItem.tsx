@@ -28,7 +28,7 @@ export default function FileListItem({ file, selected, visible, onSelect, onDele
         <div style={{ fontWeight: 'bold', fontSize: 14 }}>{file.title}</div>
         <div style={{ fontSize: 11, color: 'var(--text2)' }}>{file.stored_at}</div>
       </div>
-      <div style={{justifyContent: "right"}}>
+      <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
         <button onClick={e => { e.stopPropagation(); onDelete() }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--xbad)', fontSize: 16 }} title="Izbriši"><Trash2 /></button>
         <button onClick={e => { e.stopPropagation(); onToggleVisibility() }}
