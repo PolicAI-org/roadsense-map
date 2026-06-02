@@ -21,6 +21,7 @@ declare global {
       clearCoordinates: () => Promise<void>
       getTheme: () => Promise<'dark' | 'light' | 'system'>
       onThemeChange: (callback: (theme: 'dark' | 'light' | 'system') => void) => void
+      getGlobalStats: () => Promise<GlobalStats>
     }
   }
 }

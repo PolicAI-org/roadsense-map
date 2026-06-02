@@ -57,6 +57,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getFileStats: (fileId: number) =>
     ipcRenderer.invoke('get-file-stats', fileId),
 
+  getGlobalStats: () =>
+    ipcRenderer.invoke('get-global-stats'),
+
   getTheme: () =>
     ipcRenderer.invoke('get-theme'),
 
