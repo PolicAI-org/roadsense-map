@@ -66,6 +66,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onThemeChange: (callback: (theme: string) => void) => {
     ipcRenderer.on('theme-changed', (_event, theme) => callback(theme))
   },
+
+  loadRoadFile: (path: string) =>
+    ipcRenderer.invoke('load-road-file', path),
 });
 
 type TableRow = {

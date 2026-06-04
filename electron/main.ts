@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import db from './db'
 import { processFile } from '../src/processor'
 import { loadModel } from '../src/inference/classify'
+import { readFileSync } from 'node:fs'
 
 type ThemeSource = 'dark' | 'light' | 'system'
 let currentTheme: ThemeSource = 'system'
@@ -283,3 +284,37 @@ ipcMain.handle('get-global-stats', () => {
 
   return { totalKm: total, highKm: high, mediumKm: medium, lowKm: low }
 })
+
+ipcMain.handle("load-road-file", async (_event, filePath: string) => {
+  const json_data = readFileSync(filePath, "utf8");
+  const data = JSON.parse(json_data);
+
+  db.prepare(`DELETE FROM sections`).run();
+  db.prepare(`DELETE FROM section_coordinates`).run();
+
+  const insertSection = db.prepare(`
+    INSERT INTO sections (section_name)
+    VALUES (?)
+  `);
+
+  const insertCoord = db.prepare(`
+    INSERT INTO section_coordinates (section_id, lat, lon)
+    VALUES (?, ?, ?)
+  `);
+
+  for (const feature of data.features) {
+    const name = feature.properties?.name;
+    const geom = feature.geometry;
+
+    if (!name || !geom) continue;
+
+    const result = insertSection.run(name);
+    const sectionId = result.lastInsertRowid;
+
+    if (geom.type === "LineString") {
+      for (const [lon, lat] of geom.coordinates) {
+        insertCoord.run(sectionId, lat, lon);
+      }
+    }
+  }
+});

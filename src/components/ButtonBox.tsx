@@ -13,6 +13,15 @@ export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<S
         setRefreshKey(prev => prev + 1)
     }
 
+    const openGeoJSON = async () => {
+        const files = await window.electronAPI.openFile()
+        if (!files) return
+
+        window.electronAPI.loadRoadFile(files[0])
+
+        setRefreshKey(prev => prev + 1)
+    }
+
     type TableRow = {
       lat: number
       lon: number
@@ -43,18 +52,32 @@ export default function ButtonBox({ setRefreshKey }: { setRefreshKey: Dispatch<S
   }
 
   return (
-    <div style={{ padding: "16px 18px", display: "flex", alignItems: 'stretch', borderBottom: "1px solid var(--border2)" }}>
+    <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: "8px", borderBottom: "1px solid var(--border2)" }}>
+  
+      <div style={{ display: "flex", gap: "8px" }}>
         <button onClick={openFile} className="bb-import">
-            <FolderUp size={12}/>
-            <span>Uvozi posnetek</span>
+          <FolderUp size={12}/>
+          <span>Uvozi posnetek</span>
         </button>
-        <button onClick={async () => {
-          await window.electronAPI.clearCoordinates()
-          setRefreshKey(prev => prev + 1)
-        }} className="bb-clear">
-            <span>Počisti</span>
+
+        <button
+          onClick={async () => {
+            await window.electronAPI.clearCoordinates();
+            setRefreshKey(prev => prev + 1);
+          }}
+          className="bb-clear"
+        >
+          <span>Počisti</span>
         </button>
-      {}
+      </div>
+
+      <div>
+        <button onClick={openGeoJSON} className="bb-roadfile" style={{width: "100%"}}>
+          <FolderUp size={12}/>
+          <span>Uvozi podatke o cestah</span>
+        </button>
+      </div>
+
     </div>
   )
 }

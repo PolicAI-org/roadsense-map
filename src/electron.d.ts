@@ -22,6 +22,7 @@ declare global {
       getTheme: () => Promise<'dark' | 'light' | 'system'>
       onThemeChange: (callback: (theme: 'dark' | 'light' | 'system') => void) => void
       getGlobalStats: () => Promise<GlobalStats>
+      loadRoadFile: (path: string) => void
     }
   }
 }

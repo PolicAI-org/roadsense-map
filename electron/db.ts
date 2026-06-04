@@ -17,6 +17,14 @@ db.exec(`
     section_name TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS section_coordinates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lat REAL,
+    lon REAL,
+    section_id INTEGER,
+    FOREIGN KEY (section_id) REFERENCES sections(id) 
+  );
+
   CREATE TABLE IF NOT EXISTS coordinates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lat REAL,
