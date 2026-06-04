@@ -12,13 +12,20 @@ db.exec(`
     stored_at TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS sections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    section_name TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS coordinates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lat REAL,
     lon REAL,
     quality INTEGER,
     file_id INTEGER NOT NULL,
-    FOREIGN KEY (file_id) REFERENCES files(id)
+    section_id INTEGER,
+    FOREIGN KEY (file_id) REFERENCES files(id),
+    FOREIGN KEY (section_id) REFERENCES sections(id) 
   )
 `);
 

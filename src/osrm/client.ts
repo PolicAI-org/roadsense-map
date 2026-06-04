@@ -60,6 +60,7 @@ async function matchChunk(chunk: GpsPoint[]): Promise<SnappedPoint[]> {
     tidy: 'true',
     radiuses,
     timestamps: timestamps.join(';'),
+    annotations: 'true',
   });
 
   const res = await fetch(`${OSRM_BASE}/match/v1/driving/${coords}?${params}`, {
