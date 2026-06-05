@@ -1,4 +1,4 @@
-import { ChevronRight, Eye, EyeOff, Trash2 } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 
 interface Props {
   file: FileEntry
@@ -10,7 +10,7 @@ interface Props {
   onInfo: () => void
 }
 
-export default function FileListItem({ file, selected, visible, onSelect, onDelete, onToggleVisibility, onInfo }: Props) {
+export default function FileListItem({ file, selected, onSelect, onInfo }: Props) {
   return (
     <div
       onClick={onSelect}

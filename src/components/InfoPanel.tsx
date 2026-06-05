@@ -72,11 +72,13 @@ export default function InfoPanel({
     : 0
 
   useEffect(() => {
-    window.electronAPI
-      .getSectionStats(file.id)
-      .then(setSections)
+    const load = async () => {
+      const data = await window.electronAPI.getSectionStats(file.id)
+      setSections(data)
+      setSelectedSectionId(0)
+    }
 
-    setSelectedSectionId(0)
+    load()
   }, [file.id])
 
   const Divider = (
@@ -222,7 +224,7 @@ export default function InfoPanel({
               fontWeight: 600,
             }}
           >
-            ⚠ Uničena cesta zaznana
+            ⚠ Uničen odsek zaznan
           </div>
         )}
         {selectedSection && (

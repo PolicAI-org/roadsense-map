@@ -70,12 +70,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadRoadFile: (path: string) =>
     ipcRenderer.invoke('load-road-file', path),
 
-  getSectionStats: (fileId: number) =>
-    ipcRenderer.invoke('get-section-stats', fileId),
+  getSectionStats: (fileId: number): Promise<SectionData[]> =>
+    ipcRenderer.invoke('get-section-stats', fileId)
 });
 
 type TableRow = {
     lat: number
     lon: number
     quality: number
+}
+
+type SectionData = {
+  id: number,
+  section_name: string,
+  min_lat: number,
+  max_lat: number,
+  min_lon: number,
+  max_lon: number,
+  high_count: number,
+  medium_count: number,
+  low_count: number,
 }

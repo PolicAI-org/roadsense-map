@@ -19,7 +19,9 @@ function loadTheme(): ThemeSource {
     const data = JSON.parse(fs.readFileSync(getSettingsPath(), 'utf8'))
     const t = data.theme
     if (t === 'dark' || t === 'light' || t === 'system') return t
-  } catch {}
+  } catch (err) {
+    console.error('loadTheme failed:', err)
+  }
   return 'system'
 }
 
@@ -28,7 +30,9 @@ function saveTheme(theme: ThemeSource) {
     const p = getSettingsPath()
     const existing = fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : {}
     fs.writeFileSync(p, JSON.stringify({ ...existing, theme }))
-  } catch {}
+  } catch (err) {
+    console.error('saveTheme failed:', err)
+  }
 }
 
 function setTheme(theme: ThemeSource) {
@@ -237,14 +241,19 @@ export function recalculateNearestSectionsForFile(fileId: number) {
 function isGeoJSON(data: unknown): boolean {
   if (!data || typeof data !== "object") return false
 
-  const d = data as any
+  if (
+    "type" in data &&
+    typeof (data as { type?: unknown }).type === "string"
+  ) {
+    const d = data as { type: string; features?: unknown; geometry?: unknown }
 
-  if (d.type === "FeatureCollection" && Array.isArray(d.features)) {
-    return true
-  }
+    if (d.type === "FeatureCollection" && Array.isArray(d.features)) {
+      return true
+    }
 
-  if (d.type === "Feature" && d.geometry) {
-    return true
+    if (d.type === "Feature" && d.geometry) {
+      return true
+    }
   }
 
   return false
@@ -473,18 +482,6 @@ ipcMain.handle("load-road-file", async (_event, filePath: string) => {
   return true
 })
 
-type SectionData = {
-  id: number,
-  section_name: string,
-  min_lat: number,
-  max_lat: number,
-  min_lon: number,
-  max_lon: number,
-  high_count: number,
-  medium_count: number,
-  low_count: number,
-}
-
 ipcMain.handle("get-section-stats", (_event, fileId: number) => {
 
   const stmt = db.prepare(`
@@ -516,7 +513,7 @@ ipcMain.handle("get-section-stats", (_event, fileId: number) => {
     ORDER BY s.section_name
   `)
 
-  var result = stmt.all(fileId)
+  let result = stmt.all(fileId)
 
   if(result.length === 0) {
     recalculateNearestSectionsForFile(fileId)
