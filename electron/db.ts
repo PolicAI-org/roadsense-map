@@ -14,6 +14,10 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS sections (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    min_lat REAL,
+    max_lat REAL,
+    min_lon REAL,
+    max_lon REAL,
     section_name TEXT NOT NULL
   );
 

@@ -141,6 +141,41 @@ function createWindow() {
   }
 }
 
+type sectionCoordinates = {
+  lat: number
+  lon: number
+  section_id: number
+}
+
+function findNearestRoad(lat: number, lon: number) {
+  const delta = 0.01;
+
+  const rows = db.prepare(`
+    SELECT sc.lat, sc.lon, sc.section_id
+    FROM section_coordinates sc
+    WHERE sc.lat BETWEEN ? AND ?
+      AND sc.lon BETWEEN ? AND ?
+  `).all(
+    lat - delta,
+    lat + delta,
+    lon - delta,
+    lon + delta
+  ) as sectionCoordinates[];
+
+  let best = null;
+  let bestDist = Infinity;
+
+  for (const r of rows) {
+    const d = (r.lat - lat) ** 2 + (r.lon - lon) ** 2;
+    if (d < bestDist) {
+      bestDist = d;
+      best = r.section_id;
+    }
+  }
+
+  return best;
+}
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -193,7 +228,7 @@ type TableRow = {
 
 ipcMain.handle('insert-rows', (_event, rows: TableRow[], filepath: string) => {
   const insertFile = db.prepare(`INSERT INTO files (file_name, title) VALUES (?, ?)`)
-  const stmt = db.prepare(`INSERT INTO coordinates (lat, lon, quality, file_id) VALUES (?, ?, ?, ?)`)
+  const stmt = db.prepare(`INSERT INTO coordinates (lat, lon, quality, file_id, section_id) VALUES (?, ?, ?, ?, ?)`)
 
   const filename = path.basename(filepath, '.csv')
 
@@ -202,7 +237,8 @@ ipcMain.handle('insert-rows', (_event, rows: TableRow[], filepath: string) => {
   const insertMany = db.transaction((rows: TableRow[]) => {
     const { lastInsertRowid } = insertFile.run(filename, filename)
     for (const row of rows) {
-      stmt.run(row.lat, row.lon, row.quality, lastInsertRowid)
+      const section_id = findNearestRoad(row.lat, row.lon)
+      stmt.run(row.lat, row.lon, row.quality, lastInsertRowid, section_id)
     }
   })
 
@@ -289,32 +325,45 @@ ipcMain.handle("load-road-file", async (_event, filePath: string) => {
   const json_data = readFileSync(filePath, "utf8");
   const data = JSON.parse(json_data);
 
-  db.prepare(`DELETE FROM sections`).run();
-  db.prepare(`DELETE FROM section_coordinates`).run();
-
   const insertSection = db.prepare(`
-    INSERT INTO sections (section_name)
-    VALUES (?)
+    INSERT INTO sections (section_name, min_lat, max_lat, min_lon, max_lon)
+    VALUES (?, ?, ?, ?, ?)
   `);
+  const insertCoord = db.prepare(`INSERT INTO section_coordinates (section_id, lat, lon) VALUES (?, ?, ?)`);
 
-  const insertCoord = db.prepare(`
-    INSERT INTO section_coordinates (section_id, lat, lon)
-    VALUES (?, ?, ?)
-  `);
+  const load = db.transaction(() => {
+    db.prepare(`DELETE FROM section_coordinates`).run();
+    db.prepare(`DELETE FROM sections`).run();
 
-  for (const feature of data.features) {
-    const name = feature.properties?.name;
-    const geom = feature.geometry;
+    for (const feature of data.features) {
+      const name = feature.properties?.name;
+      const geom = feature.geometry;
+      if (!name || !geom) continue;
 
-    if (!name || !geom) continue;
+      // replace everything from here down to the end of the feature loop:
+      const coordsList = geom.type === "LineString"
+        ? [geom.coordinates]
+        : geom.type === "MultiLineString"
+        ? geom.coordinates
+        : []
 
-    const result = insertSection.run(name);
-    const sectionId = result.lastInsertRowid;
+      for (const ring of coordsList) {
+        const bounds = ring.reduce((b: {minLat: number, maxLat: number, minLon: number, maxLon: number}, [lon, lat]: [number, number]) => ({
+          minLat: Math.min(b.minLat, lat),
+          maxLat: Math.max(b.maxLat, lat),
+          minLon: Math.min(b.minLon, lon),
+          maxLon: Math.max(b.maxLon, lon),
+        }), { minLat: Infinity, maxLat: -Infinity, minLon: Infinity, maxLon: -Infinity })
 
-    if (geom.type === "LineString") {
-      for (const [lon, lat] of geom.coordinates) {
-        insertCoord.run(sectionId, lat, lon);
+        const result = insertSection.run(name, bounds.minLat, bounds.maxLat, bounds.minLon, bounds.maxLon)
+        const sectionId = result.lastInsertRowid
+
+        for (const [lon, lat] of ring) {
+          insertCoord.run(sectionId, lat, lon)
+        }
       }
     }
-  }
+  });
+
+  load();
 });
