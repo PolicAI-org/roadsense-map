@@ -93,10 +93,7 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
     map.on('load', async () => {
       map.addSource('road', {
         type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: []
-        }
+        data: { type: 'FeatureCollection', features: [] }
       })
 
       map.addLayer({
@@ -105,12 +102,10 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
         source: 'road',
         paint: {
           'line-width': 4,
-
           'line-color': [
             'interpolate',
             ['linear'],
             ['get', 'quality'],
-
             1, '#00ff00',
             2, '#ffff00',
             3, '#ff0000'
@@ -131,7 +126,7 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
   return (
     <div
       ref={mapContainer}
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: '100%', height: '100%', flex: "3" }}
     />
   )
 }

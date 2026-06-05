@@ -54,12 +54,40 @@ contextBridge.exposeInMainWorld('electronAPI', {
   renameFile: (fileId: number, newName: string) => 
     ipcRenderer.invoke('rename-file', fileId, newName),
 
-  getFileStats: (fileId: number) => 
+  getFileStats: (fileId: number) =>
     ipcRenderer.invoke('get-file-stats', fileId),
+
+  getGlobalStats: () =>
+    ipcRenderer.invoke('get-global-stats'),
+
+  getTheme: () =>
+    ipcRenderer.invoke('get-theme'),
+
+  onThemeChange: (callback: (theme: string) => void) => {
+    ipcRenderer.on('theme-changed', (_event, theme) => callback(theme))
+  },
+
+  loadRoadFile: (path: string) =>
+    ipcRenderer.invoke('load-road-file', path),
+
+  getSectionStats: (fileId: number) =>
+    ipcRenderer.invoke('get-section-stats', fileId) as Promise<SectionData[]>
 });
 
 type TableRow = {
     lat: number
     lon: number
     quality: number
+}
+
+type SectionData = {
+  id: number,
+  section_name: string,
+  min_lat: number,
+  max_lat: number,
+  min_lon: number,
+  max_lon: number,
+  high_count: number,
+  medium_count: number,
+  low_count: number,
 }

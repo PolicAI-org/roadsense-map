@@ -27,3 +27,7 @@ dist/*
 *.sw?
 
 samples_demo/*
+
+build
+
+roadsense.db

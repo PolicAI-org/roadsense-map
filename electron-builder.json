@@ -1,8 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "YourAppID",
-  "productName": "YourAppName",
+  "appId": "com.policai.roadsense-map",
   "asar": true,
+  "productName": "Roadsense Map",
+  "icon": "build/icons/roadsense-512.png",
   "directories": {
     "buildResources": "buildResources",
     "output": "release/${version}"
