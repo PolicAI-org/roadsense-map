@@ -147,33 +147,25 @@ type sectionCoordinates = {
   section_id: number
 }
 
-function findNearestRoad(lat: number, lon: number) {
-  const delta = 0.01;
+function findNearestRoad(
+  lat: number, 
+  lon: number, 
+  sectionCoords: sectionCoordinates[]
+): number | null {
+  const delta = 0.01
+  let best = null
+  let bestDist = Infinity
 
-  const rows = db.prepare(`
-    SELECT sc.lat, sc.lon, sc.section_id
-    FROM section_coordinates sc
-    WHERE sc.lat BETWEEN ? AND ?
-      AND sc.lon BETWEEN ? AND ?
-  `).all(
-    lat - delta,
-    lat + delta,
-    lon - delta,
-    lon + delta
-  ) as sectionCoordinates[];
-
-  let best = null;
-  let bestDist = Infinity;
-
-  for (const r of rows) {
-    const d = (r.lat - lat) ** 2 + (r.lon - lon) ** 2;
+  for (const r of sectionCoords) {
+    if (Math.abs(r.lat - lat) > delta || Math.abs(r.lon - lon) > delta) continue
+    const d = (r.lat - lat) ** 2 + (r.lon - lon) ** 2
     if (d < bestDist) {
-      bestDist = d;
-      best = r.section_id;
+      bestDist = d
+      best = r.section_id
     }
   }
 
-  return best;
+  return best
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -227,17 +219,19 @@ type TableRow = {
 }
 
 ipcMain.handle('insert-rows', (_event, rows: TableRow[], filepath: string) => {
+  // load all section coords once
+  const sectionCoords = db.prepare(`
+    SELECT lat, lon, section_id FROM section_coordinates
+  `).all() as sectionCoordinates[]
+
   const insertFile = db.prepare(`INSERT INTO files (file_name, title) VALUES (?, ?)`)
   const stmt = db.prepare(`INSERT INTO coordinates (lat, lon, quality, file_id, section_id) VALUES (?, ?, ?, ?, ?)`)
-
   const filename = path.basename(filepath, '.csv')
-
-  //console.log(db.prepare('SELECT COUNT(*) as count FROM coordinates').get())
 
   const insertMany = db.transaction((rows: TableRow[]) => {
     const { lastInsertRowid } = insertFile.run(filename, filename)
     for (const row of rows) {
-      const section_id = findNearestRoad(row.lat, row.lon)
+      const section_id = findNearestRoad(row.lat, row.lon, sectionCoords)
       stmt.run(row.lat, row.lon, row.quality, lastInsertRowid, section_id)
     }
   })
@@ -322,48 +316,46 @@ ipcMain.handle('get-global-stats', () => {
 })
 
 ipcMain.handle("load-road-file", async (_event, filePath: string) => {
-  const json_data = readFileSync(filePath, "utf8");
-  const data = JSON.parse(json_data);
+  const json_data = readFileSync(filePath, "utf8")
+  const data = JSON.parse(json_data)
 
-  const insertSection = db.prepare(`
-    INSERT INTO sections (section_name, min_lat, max_lat, min_lon, max_lon)
-    VALUES (?, ?, ?, ?, ?)
-  `);
-  const insertCoord = db.prepare(`INSERT INTO section_coordinates (section_id, lat, lon) VALUES (?, ?, ?)`);
+  db.prepare(`UPDATE coordinates SET section_id = NULL`).run()
+  db.prepare(`DELETE FROM section_coordinates`).run()
+  db.prepare(`DELETE FROM sections`).run()
 
-  const load = db.transaction(() => {
-    db.prepare(`DELETE FROM section_coordinates`).run();
-    db.prepare(`DELETE FROM sections`).run();
+  const insertSection = db.prepare(`INSERT INTO sections (section_name, min_lat, max_lat, min_lon, max_lon) VALUES (?, ?, ?, ?, ?)`)
+  const insertCoord = db.prepare(`INSERT INTO section_coordinates (section_id, lat, lon) VALUES (?, ?, ?)`)
 
-    for (const feature of data.features) {
-      const name = feature.properties?.name;
-      const geom = feature.geometry;
-      if (!name || !geom) continue;
+  const features = data.features
+  const CHUNK = 50
 
-      // replace everything from here down to the end of the feature loop:
-      const coordsList = geom.type === "LineString"
-        ? [geom.coordinates]
-        : geom.type === "MultiLineString"
-        ? geom.coordinates
-        : []
+  for (let i = 0; i < features.length; i += CHUNK) {
+    const chunk = features.slice(i, i + CHUNK)
+    
+    const process = db.transaction(() => {
+      for (const feature of chunk) {
+        const name = feature.properties?.name
+        const geom = feature.geometry
+        if (!name || !geom) continue
 
-      for (const ring of coordsList) {
-        const bounds = ring.reduce((b: {minLat: number, maxLat: number, minLon: number, maxLon: number}, [lon, lat]: [number, number]) => ({
-          minLat: Math.min(b.minLat, lat),
-          maxLat: Math.max(b.maxLat, lat),
-          minLon: Math.min(b.minLon, lon),
-          maxLon: Math.max(b.maxLon, lon),
-        }), { minLat: Infinity, maxLat: -Infinity, minLon: Infinity, maxLon: -Infinity })
+        const coordsList = geom.type === "LineString" ? [geom.coordinates]
+          : geom.type === "MultiLineString" ? geom.coordinates : []
 
-        const result = insertSection.run(name, bounds.minLat, bounds.maxLat, bounds.minLon, bounds.maxLon)
-        const sectionId = result.lastInsertRowid
+        for (const ring of coordsList) {
+          const bounds = ring.reduce((b: any, [lon, lat]: [number, number]) => ({
+            minLat: Math.min(b.minLat, lat), maxLat: Math.max(b.maxLat, lat),
+            minLon: Math.min(b.minLon, lon), maxLon: Math.max(b.maxLon, lon),
+          }), { minLat: Infinity, maxLat: -Infinity, minLon: Infinity, maxLon: -Infinity })
 
-        for (const [lon, lat] of ring) {
-          insertCoord.run(sectionId, lat, lon)
+          const result = insertSection.run(name, bounds.minLat, bounds.maxLat, bounds.minLon, bounds.maxLon)
+          for (const [lon, lat] of ring) {
+            insertCoord.run(result.lastInsertRowid, lat, lon)
+          }
         }
       }
-    }
-  });
+    })
+    process()
 
-  load();
-});
+    await new Promise(resolve => setTimeout(resolve, 0))
+  }
+})
