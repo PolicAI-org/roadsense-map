@@ -86,7 +86,9 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
           onRename={async (id, name) => {
             await window.electronAPI.renameFile(id, name)
             setFiles(prev => prev.map(f => f.id === id ? { ...f, title: name } : f))
-            setInfoFile((prev: any) => prev ? { ...prev, title: name } : null)
+            setInfoFile(prev =>
+              prev ? { ...prev, title: name } : null
+            )
           }}
         />
       )} 
