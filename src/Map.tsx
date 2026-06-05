@@ -117,7 +117,7 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
     })
 
     return () => map.remove()
-  }, [])
+  }, [reloadRoadData])
 
   useEffect(() => {
     reloadRoadData()
