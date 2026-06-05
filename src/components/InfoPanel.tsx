@@ -27,8 +27,8 @@ function getSectionColor(section: SectionData): string {
   const total = section.high_count + section.medium_count + section.low_count
   if (total === 0) return 'inherit'
   const avg = (section.high_count * 1 + section.medium_count * 2 + section.low_count * 3) / total
-  if (avg <= 1.0) return '#22c55e'
-  if (avg <= 2.0) return '#eab308'
+  if (avg <= 1.25) return '#22c55e'
+  if (avg <= 2.25) return '#eab308'
   return '#ef4444'
 }
 
@@ -191,11 +191,26 @@ export default function InfoPanel({
               value={section.id}
               style={{ color: getSectionColor(section) }}
             >
-              {section.section_name}
+              {section.section_name + " (" + section.id + ")"}
             </option>
           ))}
         </select>
         {selectedSection && (
+        <div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button
+              className="icon-btn"
+              onClick={() => {
+                onFitBounds([
+                  [selectedSection.min_lon, selectedSection.min_lat],
+                  [selectedSection.max_lon, selectedSection.max_lat],
+                ])
+              }}
+            >
+              <ZoomIn size={16} />
+            </button>
+          </div>
+
           <div>
             <p><strong>Ime:</strong> {selectedSection.section_name}</p>
             <p><strong>Skupaj vzorcev:</strong> {totalCount}</p>
@@ -209,7 +224,8 @@ export default function InfoPanel({
               {selectedSection.min_lon.toFixed(5)} – {selectedSection.max_lon.toFixed(5)} lon
             </p>
           </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
   )

@@ -168,6 +168,26 @@ function findNearestRoad(
   return best
 }
 
+function isGeoJSON(text: string): boolean {
+  try {
+    const data = JSON.parse(text)
+
+    if (!data || typeof data !== "object") return false
+
+    if (data.type === "FeatureCollection" && Array.isArray(data.features)) {
+      return true
+    }
+
+    if (data.type === "Feature" && data.geometry) {
+      return true
+    }
+
+    return false
+  } catch {
+    return false
+  }
+}
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -219,7 +239,6 @@ type TableRow = {
 }
 
 ipcMain.handle('insert-rows', (_event, rows: TableRow[], filepath: string) => {
-  // load all section coords once
   const sectionCoords = db.prepare(`
     SELECT lat, lon, section_id FROM section_coordinates
   `).all() as sectionCoordinates[]
