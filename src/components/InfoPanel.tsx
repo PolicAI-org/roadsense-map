@@ -49,6 +49,22 @@ export default function InfoPanel({
   const selectedSection =
     sections.find(s => s.id === selectedSectionId) ?? null
 
+  const hasLowQualitySection = sections.some(section => {
+    const total =
+      section.high_count +
+      section.medium_count +
+      section.low_count
+
+    if (total === 0) return false
+
+    const avg =
+      (section.high_count * 1 +
+      section.medium_count * 2 +
+      section.low_count * 3) / total
+
+    return avg > 2.25
+  })
+
   const totalCount = selectedSection
     ? (selectedSection.low_count +
       selectedSection.medium_count +
@@ -195,6 +211,20 @@ export default function InfoPanel({
             </option>
           ))}
         </select>
+        {hasLowQualitySection && (
+          <div
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              padding: '10px 12px',
+              borderRadius: 6,
+              marginBottom: 12,
+              fontWeight: 600,
+            }}
+          >
+            ⚠ Uničena cesta zaznana
+          </div>
+        )}
         {selectedSection && (
         <div>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
