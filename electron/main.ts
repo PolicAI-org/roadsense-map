@@ -168,24 +168,86 @@ function findNearestRoad(
   return best
 }
 
-function isGeoJSON(text: string): boolean {
-  try {
-    const data = JSON.parse(text)
+type Section = {
+  id: number
+  min_lat: number
+  max_lat: number
+  min_lon: number
+  max_lon: number
+}
 
-    if (!data || typeof data !== "object") return false
+type Coord = {
+  id: number
+  lat: number
+  lon: number
+}
 
-    if (data.type === "FeatureCollection" && Array.isArray(data.features)) {
-      return true
+export function recalculateNearestSectionsForFile(fileId: number) {
+  const sections = db.prepare(`
+    SELECT id, min_lat, max_lat, min_lon, max_lon
+    FROM sections
+  `).all() as Section[]
+
+  const coords = db.prepare(`
+    SELECT id, lat, lon
+    FROM coordinates
+    WHERE file_id = ?
+  `).all(fileId) as Coord[]
+
+  if (sections.length === 0 || coords.length === 0) return
+
+  const centroids = sections.map(s => ({
+    id: s.id,
+    lat: (s.min_lat + s.max_lat) / 2,
+    lon: (s.min_lon + s.max_lon) / 2,
+  }))
+
+  const update = db.prepare(`
+    UPDATE coordinates
+    SET section_id = ?
+    WHERE id = ?
+  `)
+
+  const tx = db.transaction(() => {
+    for (const c of coords) {
+      let bestId: number | null = null
+      let bestDist = Infinity
+
+      for (const s of centroids) {
+        // fast squared distance (no sqrt needed)
+        const dx = c.lat - s.lat
+        const dy = c.lon - s.lon
+        const dist = dx * dx + dy * dy
+
+        if (dist < bestDist) {
+          bestDist = dist
+          bestId = s.id
+        }
+      }
+
+      if (bestId !== null) {
+        update.run(bestId, c.id)
+      }
     }
+  })
 
-    if (data.type === "Feature" && data.geometry) {
-      return true
-    }
+  tx()
+}
 
-    return false
-  } catch {
-    return false
+function isGeoJSON(data: unknown): boolean {
+  if (!data || typeof data !== "object") return false
+
+  const d = data as any
+
+  if (d.type === "FeatureCollection" && Array.isArray(d.features)) {
+    return true
   }
+
+  if (d.type === "Feature" && d.geometry) {
+    return true
+  }
+
+  return false
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -338,45 +400,77 @@ ipcMain.handle("load-road-file", async (_event, filePath: string) => {
   const json_data = readFileSync(filePath, "utf8")
   const data = JSON.parse(json_data)
 
+  if (!isGeoJSON(data)) {
+    return false
+  }
+
   db.prepare(`UPDATE coordinates SET section_id = NULL`).run()
   db.prepare(`DELETE FROM section_coordinates`).run()
   db.prepare(`DELETE FROM sections`).run()
 
-  const insertSection = db.prepare(`INSERT INTO sections (section_name, min_lat, max_lat, min_lon, max_lon) VALUES (?, ?, ?, ?, ?)`)
-  const insertCoord = db.prepare(`INSERT INTO section_coordinates (section_id, lat, lon) VALUES (?, ?, ?)`)
+  const insertSection = db.prepare(`
+    INSERT INTO sections (section_name, min_lat, max_lat, min_lon, max_lon)
+    VALUES (?, ?, ?, ?, ?)
+  `)
+
+  const insertCoord = db.prepare(`
+    INSERT INTO section_coordinates (section_id, lat, lon)
+    VALUES (?, ?, ?)
+  `)
 
   const features = data.features
-  const CHUNK = 50
 
-  for (let i = 0; i < features.length; i += CHUNK) {
-    const chunk = features.slice(i, i + CHUNK)
-    
-    const process = db.transaction(() => {
-      for (const feature of chunk) {
-        const name = feature.properties?.name
-        const geom = feature.geometry
-        if (!name || !geom) continue
+  const processAll = db.transaction((features) => {
+    for (const feature of features) {
+      const name = feature.properties?.name
+      const geom = feature.geometry
+      if (!name || !geom) continue
 
-        const coordsList = geom.type === "LineString" ? [geom.coordinates]
-          : geom.type === "MultiLineString" ? geom.coordinates : []
+      const coordsList =
+        geom.type === "LineString"
+          ? [geom.coordinates]
+          : geom.type === "MultiLineString"
+          ? geom.coordinates
+          : []
 
-        for (const ring of coordsList) {
-          const bounds = ring.reduce((b: any, [lon, lat]: [number, number]) => ({
-            minLat: Math.min(b.minLat, lat), maxLat: Math.max(b.maxLat, lat),
-            minLon: Math.min(b.minLon, lon), maxLon: Math.max(b.maxLon, lon),
-          }), { minLat: Infinity, maxLat: -Infinity, minLon: Infinity, maxLon: -Infinity })
+      let minLat = Infinity
+      let maxLat = -Infinity
+      let minLon = Infinity
+      let maxLon = -Infinity
 
-          const result = insertSection.run(name, bounds.minLat, bounds.maxLat, bounds.minLon, bounds.maxLon)
-          for (const [lon, lat] of ring) {
-            insertCoord.run(result.lastInsertRowid, lat, lon)
-          }
+      for (const ring of coordsList) {
+        for (const [lon, lat] of ring) {
+          if (lat < minLat) minLat = lat
+          if (lat > maxLat) maxLat = lat
+          if (lon < minLon) minLon = lon
+          if (lon > maxLon) maxLon = lon
         }
       }
-    })
-    process()
 
-    await new Promise(resolve => setTimeout(resolve, 0))
-  }
+      if (!isFinite(minLat)) continue
+
+      const result = insertSection.run(
+        name,
+        minLat,
+        maxLat,
+        minLon,
+        maxLon
+      )
+
+      const sectionId = result.lastInsertRowid
+
+      for (const ring of coordsList) {
+        for (const [lon, lat] of ring) {
+          insertCoord.run(sectionId, lat, lon)
+        }
+      }
+    }
+    
+  })
+
+  processAll(features)
+
+  return true
 })
 
 type SectionData = {
@@ -392,6 +486,7 @@ type SectionData = {
 }
 
 ipcMain.handle("get-section-stats", (_event, fileId: number) => {
+
   const stmt = db.prepare(`
     SELECT
       s.id,
@@ -421,5 +516,12 @@ ipcMain.handle("get-section-stats", (_event, fileId: number) => {
     ORDER BY s.section_name
   `)
 
-  return stmt.all(fileId)
+  var result = stmt.all(fileId)
+
+  if(result.length === 0) {
+    recalculateNearestSectionsForFile(fileId)
+    result = stmt.all(fileId)
+  }
+
+  return result
 })
