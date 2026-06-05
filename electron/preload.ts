@@ -69,6 +69,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   loadRoadFile: (path: string) =>
     ipcRenderer.invoke('load-road-file', path),
+
+  getSectionStats: (fileId: number) =>
+    ipcRenderer.invoke('get-section-stats', fileId),
 });
 
 type TableRow = {

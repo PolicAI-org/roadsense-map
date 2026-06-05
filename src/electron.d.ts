@@ -23,6 +23,7 @@ declare global {
       onThemeChange: (callback: (theme: 'dark' | 'light' | 'system') => void) => void
       getGlobalStats: () => Promise<GlobalStats>
       loadRoadFile: (path: string) => void
+      getSectionStats: (fileId: number) => SectionData[]
     }
   }
 }

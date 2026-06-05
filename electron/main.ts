@@ -359,3 +359,48 @@ ipcMain.handle("load-road-file", async (_event, filePath: string) => {
     await new Promise(resolve => setTimeout(resolve, 0))
   }
 })
+
+type SectionData = {
+  id: number,
+  section_name: string,
+  min_lat: number,
+  max_lat: number,
+  min_lon: number,
+  max_lon: number,
+  high_count: number,
+  medium_count: number,
+  low_count: number,
+}
+
+ipcMain.handle("get-section-stats", (_event, fileId: number) => {
+  const stmt = db.prepare(`
+    SELECT
+      s.id,
+      s.section_name,
+      s.min_lat,
+      s.max_lat,
+      s.min_lon,
+      s.max_lon,
+
+      SUM(CASE WHEN c.quality = 1 THEN 1 ELSE 0 END) AS high_count,
+      SUM(CASE WHEN c.quality = 2 THEN 1 ELSE 0 END) AS medium_count,
+      SUM(CASE WHEN c.quality = 3 THEN 1 ELSE 0 END) AS low_count
+
+    FROM sections s
+    INNER JOIN coordinates c
+      ON c.section_id = s.id
+      AND c.file_id = ?
+
+    GROUP BY
+      s.id,
+      s.section_name,
+      s.min_lat,
+      s.max_lat,
+      s.min_lon,
+      s.max_lon
+
+    ORDER BY s.section_name
+  `)
+
+  return stmt.all(fileId)
+})
