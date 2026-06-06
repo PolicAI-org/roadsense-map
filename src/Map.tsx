@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback} from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import type { FeatureCollection, LineString } from 'geojson'
 import maplibregl from 'maplibre-gl'
 import type { GeoJSONSource } from 'maplibre-gl'
@@ -18,10 +18,11 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
 }) {
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
+  const reloadRoadDataRef = useRef<() => Promise<void>>(async () => {})
 
   useEffect(() => {
     if (boundsToFit && mapRef.current) {
-      mapRef.current.fitBounds(boundsToFit, { padding: 40 })
+      mapRef.current.fitBounds(boundsToFit, { padding: 60, maxZoom: 16 })
     }
   }, [boundsToFit])
 
@@ -78,6 +79,12 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
     }
   }, [visibleFileIds])
 
+  // Keep ref current so the map init effect can always call the latest version
+  useEffect(() => {
+    reloadRoadDataRef.current = reloadRoadData
+  }, [reloadRoadData])
+
+  // Runs once — never re-creates the map on visibility changes
   useEffect(() => {
     if (!mapContainer.current) return
 
@@ -113,11 +120,11 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
         }
       })
 
-      await reloadRoadData()
+      await reloadRoadDataRef.current()
     })
 
     return () => map.remove()
-  }, [reloadRoadData])
+  }, [])
 
   useEffect(() => {
     reloadRoadData()

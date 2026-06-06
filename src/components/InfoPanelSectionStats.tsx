@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ZoomIn } from 'lucide-react'
+import { ZoomIn, AlertTriangle } from 'lucide-react'
 import InfoPanelQualityStats from './InfoPanelQualityStats'
 import InfoPanelCoords from './InfoPanelCoords'
 
@@ -13,6 +13,10 @@ type SectionData = {
   high_count: number
   medium_count: number
   low_count: number
+  meas_min_lat: number
+  meas_max_lat: number
+  meas_min_lon: number
+  meas_max_lon: number
 }
 
 function getSectionColor(section: SectionData): string {
@@ -103,7 +107,7 @@ export default function InfoPanelSectionStats({ fileId, onFitBounds }: Props) {
           fontWeight: 600,
           fontSize: 13,
         }}>
-          ⚠ Zelo grob odsek zaznan
+          <AlertTriangle size={14} /> Zelo grob odsek zaznan
         </div>
       )}
 
@@ -119,8 +123,8 @@ export default function InfoPanelSectionStats({ fileId, onFitBounds }: Props) {
               className="icon-btn icon-btn--outlined"
               style={{ padding: 6 }}
               onClick={() => onFitBounds([
-                [selectedSection.min_lon, selectedSection.min_lat],
-                [selectedSection.max_lon, selectedSection.max_lat],
+                [selectedSection.meas_min_lon, selectedSection.meas_min_lat],
+                [selectedSection.meas_max_lon, selectedSection.meas_max_lat],
               ])}>
               <ZoomIn size={14} />
             </button>
