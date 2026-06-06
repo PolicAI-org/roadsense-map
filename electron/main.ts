@@ -495,7 +495,12 @@ ipcMain.handle("get-section-stats", (_event, fileId: number) => {
 
       SUM(CASE WHEN c.quality = 1 THEN 1 ELSE 0 END) AS high_count,
       SUM(CASE WHEN c.quality = 2 THEN 1 ELSE 0 END) AS medium_count,
-      SUM(CASE WHEN c.quality = 3 THEN 1 ELSE 0 END) AS low_count
+      SUM(CASE WHEN c.quality = 3 THEN 1 ELSE 0 END) AS low_count,
+
+      MIN(c.lat) AS meas_min_lat,
+      MAX(c.lat) AS meas_max_lat,
+      MIN(c.lon) AS meas_min_lon,
+      MAX(c.lon) AS meas_max_lon
 
     FROM sections s
     INNER JOIN coordinates c
