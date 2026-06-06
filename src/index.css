@@ -186,3 +186,11 @@ button {
 
 .icon-btn-danger { color: var(--xbad); }
 .icon-btn-danger:hover { color: var(--xbad); background: var(--xbad-bg); }
+
+.icon-btn--outlined {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px;
+}
+.icon-btn--outlined:hover { background: var(--card2); }

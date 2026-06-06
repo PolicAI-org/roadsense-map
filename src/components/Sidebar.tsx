@@ -48,14 +48,15 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
 
   return (
     <div style={{
-      height: '100vh', 
+      height: '100vh',
       background: 'var(--bg2)',
-      minWidth: "280px", 
-      maxWidth: "480px", 
+      minWidth: "280px",
+      maxWidth: "480px",
       flex: "1",
       borderRight: '1px solid var(--border)',
       display: 'flex',
       flexDirection: 'column',
+      position: 'relative',
     }}>
       <IconBar />
       <ButtonBox setRefreshKey={setRefreshKey} />
@@ -89,6 +90,13 @@ export default function Sidebar({ refreshKey, setRefreshKey, onSelect, onDelete,
             setInfoFile(prev =>
               prev ? { ...prev, title: name } : null
             )
+          }}
+          onDelete={async () => {
+            await window.electronAPI.deleteFile(infoFile.id)
+            setFiles(prev => prev.filter(f => f.id !== infoFile.id))
+            if (selected === infoFile.id) { setSelected(null); onSelect(null) }
+            setInfoFile(null)
+            onDelete()
           }}
         />
       )} 
