@@ -44,7 +44,6 @@ export default function InfoPanelFileInfo({ file, onRename }: Props) {
         </button>
       </div>
 
-      <hr style={{ border: 'none', borderTop: '3px solid var(--border2)', margin: '8px 0' }} />
       <p><strong>Ime datoteke:</strong> {file.file_name}</p>
       <p><strong>Naloženo:</strong> {file.stored_at}</p>
     </div>

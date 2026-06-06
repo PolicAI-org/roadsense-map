@@ -15,10 +15,6 @@ interface Props {
   onDelete: () => void
 }
 
-const Divider = (
-  <hr style={{ border: 'none', borderTop: '3px solid var(--border2)', margin: '8px 0' }} />
-)
-
 export default function InfoPanel({ file, stats, visible, onClose, onToggleVisibility, onFitBounds, onRename, onDelete }: Props) {
   return (
     <div
@@ -53,7 +49,6 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
         <InfoPanelFileInfo file={file} onRename={onRename} />
         {stats && (
           <>
-            {Divider}
             <InfoPanelQualityStats
               label="KAKOVOST — SKUPAJ"
               high={stats.high.count}
@@ -61,7 +56,6 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
               low={stats.low.count}
               total={stats.total.count}
             />
-            {Divider}
             <InfoPanelCoords
               minLat={stats.bounds.minLat}
               maxLat={stats.bounds.maxLat}
@@ -70,7 +64,6 @@ export default function InfoPanel({ file, stats, visible, onClose, onToggleVisib
             />
           </>
         )}
-        {Divider}
         <InfoPanelSectionStats fileId={file.id} onFitBounds={onFitBounds} />
       </div>
       <div style={{ padding: 16, borderTop: '1px solid var(--border2)', flexShrink: 0 }}>
