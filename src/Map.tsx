@@ -90,7 +90,7 @@ export default function Map({ refreshKey, visibleFileIds, boundsToFit}: {
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',
+      style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=0b26ce5e-de8e-4525-9cc3-3cbeff7d5c05',
       center: [14.5058, 46.0569],
       zoom: 7
     })
