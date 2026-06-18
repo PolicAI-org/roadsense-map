@@ -50,6 +50,6 @@ jobs:
 
       - name: Publish release
         if: github.ref == 'refs/heads/main'
-        run: npx electron-builder
+        run: npx electron-builder --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
