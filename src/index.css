@@ -1,0 +1,196 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  color-scheme: dark;
+
+  /* ── Surfaces ── */
+  --bg:        #060b16;
+  --bg2:       #0a111f;
+  --bg3:       #101c36;
+  --card:      #131e38;
+  --card2:     #172240;
+
+  /* ── Borders ── */
+  --border:    #1d2e50;
+  --border2:   #253660;
+
+  /* ── Text ── */
+  --text:      #d8e6f5;
+  --text2:     #8ca8c8;
+  --text3:     #4a6888;
+
+  /* ── Road quality (semantic) ── */
+  --nice:  #00e676;
+  --bad:   #ff6d00;
+  --xbad:  #c42b2b;
+  --nice-bg:   rgba(0,230,118,0.10);
+  --bad-bg:    rgba(255,109,0,0.10);
+  --xbad-bg: rgba(196,43,43,0.10);
+
+  /* ── Accent ── */
+  --accent:    #2f6fd0;
+  --accent-hover: #3a82e8;
+  --danger:       #c43c3c;
+  --danger-hover: #d24a4a;
+
+  /* ── Chrome ── */
+  --titlebar:    #040810;
+  --titlebar-bd: #0a1020;
+  --statusbar:   rgba(8,15,30,0.88);
+
+  /* ── Elevation & overlays ── */
+  --shadow-lg:    0 8px 32px rgba(0,0,0,0.55);
+  --shadow-modal: 0 24px 80px rgba(0,0,0,0.65);
+  --tip-shadow:   0 4px 18px rgba(0,0,0,0.45);
+  --scrim:        rgba(4,8,20,0.82);
+
+  /* ── Layout ── */
+  --sidebar-w: 300px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg:        #eef1f6;
+  --bg2:       #ffffff;
+  --bg3:       #ffffff;
+  --card:      #ffffff;
+  --card2:     #eef3fb;
+
+  --border:    #e0e5ee;
+  --border2:   #cbd3e1;
+
+  --text:      #1a2438;
+  --text2:     #4f617e;
+  --text3:     #8a99b3;
+
+  --nice:      #00a352;
+  --bad:       #e25c00;
+  --xbad:      #c20000;
+  --nice-bg:   rgba(0,179,90,0.12);
+  --bad-bg:    rgba(226,92,0,0.12);
+  --xbad-bg:   rgba(194,0,0,0.10);
+
+  --accent:       #2a6fdb;
+  --accent-hover: #1f5bbf;
+  --danger-hover: #b03030;
+
+  --titlebar:    #e4e8f0;
+  --titlebar-bd: #d2d9e5;
+  --statusbar:   rgba(248,250,253,0.92);
+
+  --shadow-lg:    0 8px 28px rgba(40,60,100,0.16);
+  --shadow-modal: 0 24px 70px rgba(30,45,80,0.28);
+  --tip-shadow:   0 4px 18px rgba(40,60,100,0.18);
+  --scrim:        rgba(120,135,165,0.45);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--text);
+  background-color: var(--bg);
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+a {
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+.bb-import {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px 0 0 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.bb-import:hover { background: var(--accent-hover); }
+
+.bb-roadfile {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px 6px 6px 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.bb-roadfile:hover { background: var(--accent-hover); }
+
+.bb-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.bb-clear:hover { background: var(--danger-hover); }
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text2);
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.icon-btn:hover { color: var(--text); }
+
+.icon-btn-danger { color: var(--xbad); }
+.icon-btn-danger:hover { color: var(--xbad); background: var(--xbad-bg); }
+
+.icon-btn--outlined {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px;
+}
+.icon-btn--outlined:hover { background: var(--card2); }

@@ -1,0 +1,30 @@
+<svg width="128" height="128" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rsBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#142242"></stop>
+      <stop offset="1" stop-color="#0a1326"></stop>
+    </linearGradient>
+    <clipPath id="rsRoad">
+      <path d="M5.4 25.8 L26.6 25.8 L19.2 7 L12.8 7 Z"></path>
+    </clipPath>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7.5" fill="url(#rsBg)" stroke="#243a66" stroke-width="1"></rect>
+
+  <g clip-path="url(#rsRoad)">
+    <rect x="0" y="19.4" width="32" height="6.4" fill="#00e676"></rect>
+    <rect x="0" y="13.2" width="32" height="6.2" fill="#ff6d00"></rect>
+    <rect x="0" y="7.0" width="32" height="6.2" fill="#d50000"></rect>
+    <line x1="5.4" y1="25.8" x2="12.8" y2="7" stroke="#0a1326" stroke-width="0.9" opacity="0.5"></line>
+    <line x1="26.6" y1="25.8" x2="19.2" y2="7" stroke="#0a1326" stroke-width="0.9" opacity="0.5"></line>
+    <line x1="5.4" y1="25.8" x2="12.8" y2="7" stroke="#ffffff" stroke-width="0.5" opacity="0.30"></line>
+    <line x1="26.6" y1="25.8" x2="19.2" y2="7" stroke="#ffffff" stroke-width="0.5" opacity="0.30"></line>
+    <polygon points="14.57,25.8 17.43,25.8 17.34,24 14.66,24" fill="#eef5ff"></polygon>
+    <polygon points="14.73,22.7 17.27,22.7 17.19,21.2 14.81,21.2" fill="#eef5ff"></polygon>
+    <polygon points="14.89,19.8 17.11,19.8 17.04,18.5 14.96,18.5" fill="#eef5ff"></polygon>
+    <polygon points="15.04,16.9 16.96,16.9 16.90,15.8 15.10,15.8" fill="#eef5ff"></polygon>
+    <polygon points="15.19,14.2 16.81,14.2 16.77,13.3 15.23,13.3" fill="#eef5ff"></polygon>
+    <polygon points="15.31,11.8 16.69,11.8 16.65,11.1 15.35,11.1" fill="#eef5ff"></polygon>
+    <polygon points="15.43,9.6 16.57,9.6 16.54,9 15.46,9" fill="#eef5ff"></polygon>
+  </g>
+</svg>

@@ -12,7 +12,7 @@ jobs:
         
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-2022]
 
     steps:
       - uses: actions/checkout@v4
@@ -23,13 +23,18 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Install dependencies
         run: npm ci
 
       - name: Lint
         run: npm run lint
 
-      - name: Run tests
+      - name: Test
         run: npm test
 
       - name: Start virtual display (Linux)
@@ -40,3 +45,11 @@ jobs:
 
       - name: Build Electron app
         run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release
+        if: github.ref == 'refs/heads/main'
+        run: npx electron-builder
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
