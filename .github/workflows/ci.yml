@@ -50,6 +50,8 @@ jobs:
 
       - name: Publish release
         if: github.ref == 'refs/heads/main'
-        run: npx electron-builder --publish always
+        uses: softprops/action-gh-release@v2
+        with:
+          files: roads.zip
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
