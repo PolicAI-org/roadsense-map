@@ -12,10 +12,6 @@
     {
       "from": "./scripts",
       "to": "scripts"
-    },
-    { 
-      "from": "./roads.zip", 
-      "to": "roads.zip" 
     }
   ],
   "files": [
