@@ -14,8 +14,8 @@
       "to": "scripts"
     },
     { 
-      "from": "./roads.geojson", 
-      "to": "roads.geojson" 
+      "from": "./roads.zip", 
+      "to": "roads.zip" 
     }
   ],
   "files": [
