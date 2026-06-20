@@ -58,7 +58,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Attach roads.zip to release
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && runner.os == 'Linux'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.PACKAGE_VERSION }}
