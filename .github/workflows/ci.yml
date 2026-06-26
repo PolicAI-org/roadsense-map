@@ -57,11 +57,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Attach roads.zip to release
+      - name: Download latest Android APKs from gps-snemanje-app
+        if: github.ref == 'refs/heads/main' && runner.os == 'Linux'
+        run: |
+          mkdir -p apks
+          gh release download --repo PolicAI-org/gps-snemanje-app --pattern '*.apk' --dir apks
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach roads.zip and Android APKs to release
         if: github.ref == 'refs/heads/main' && runner.os == 'Linux'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.PACKAGE_VERSION }}
-          files: roads.zip
+          files: |
+            roads.zip
+            apks/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
